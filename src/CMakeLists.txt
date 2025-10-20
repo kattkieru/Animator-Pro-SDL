@@ -33,17 +33,41 @@ add_subdirectory(softmenu)
 add_subdirectory(util)
 add_subdirectory(wndo)
 
+## Even if WITH_POCO is 0, these files are
+## still needed for softmenu parsing
+include_directories("${CMAKE_SOURCE_DIR}/poco/include")
+set(PJ_POCO_FILES
+	"${CMAKE_SOURCE_DIR}/poco/src/token.c"
+	"${CMAKE_SOURCE_DIR}/poco/src/bcutil.c"
+)
+
 if (WITH_POCO)
-    # poco is now a top-level subproject; include only minimal files needed when disabled
-    
-else()
-	## files still needed for softmenu parsing
-	include_directories("${CMAKE_SOURCE_DIR}/poco/include")
-	set(PJ_POCO_FILES
-		"${CMAKE_SOURCE_DIR}/poco/src/token.c"
-		"${CMAKE_SOURCE_DIR}/poco/src/bcutil.c"
+	list(APPEND
+		PJ_POCO_FILES
+		"${CMAKE_CURRENT_SOURCE_DIR}/pocoa3d.c"
+		"${CMAKE_CURRENT_SOURCE_DIR}/pocoalt.c"
+		"${CMAKE_CURRENT_SOURCE_DIR}/pocoblit.c"
+		"${CMAKE_CURRENT_SOURCE_DIR}/pococel.c"
+		"${CMAKE_CURRENT_SOURCE_DIR}/pococolo.c"
+		"${CMAKE_CURRENT_SOURCE_DIR}/pocodos.c"
+		"${CMAKE_CURRENT_SOURCE_DIR}/pocodraw.c"
+		"${CMAKE_CURRENT_SOURCE_DIR}/pocofile.c"
+		"${CMAKE_CURRENT_SOURCE_DIR}/pocoflic.c"
+		"${CMAKE_CURRENT_SOURCE_DIR}/pocofunc.c"
+		"${CMAKE_CURRENT_SOURCE_DIR}/pocogvar.c"
+		"${CMAKE_CURRENT_SOURCE_DIR}/pocolibs.c"
+		"${CMAKE_CURRENT_SOURCE_DIR}/pocomode.c"
+		"${CMAKE_CURRENT_SOURCE_DIR}/pocoqnum.c"
+		"${CMAKE_CURRENT_SOURCE_DIR}/pocorex.c"
+		"${CMAKE_CURRENT_SOURCE_DIR}/pocotext.c"
+		"${CMAKE_CURRENT_SOURCE_DIR}/pocotime.c"
+		"${CMAKE_CURRENT_SOURCE_DIR}/pocotur.c"
+		"${CMAKE_CURRENT_SOURCE_DIR}/pocotwee.c"
+		"${CMAKE_CURRENT_SOURCE_DIR}/pocouser.c"
+		"${CMAKE_CURRENT_SOURCE_DIR}/qpoco.c"
+		"${CMAKE_CURRENT_SOURCE_DIR}/qpocoed.c"
 	)
-endif()
+endif() ## WITH_POCO
 
 set(PJMAIN_SRC_FILES
 	a3d.c

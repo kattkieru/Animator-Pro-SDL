@@ -1,6 +1,8 @@
 #ifndef JFILE_H
 #define JFILE_H
 
+#include <stddef.h>
+
 #ifndef STDTYPES_H
 	#include "stdtypes.h"
 #endif

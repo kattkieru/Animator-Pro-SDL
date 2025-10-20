@@ -127,6 +127,21 @@ extern char *_STACKLOW; 					/* not sure what these are for, */
 #define copy_va_list(src,dest)	{dest=src;}
 
 /*****************************************************************************
+ * Clang / GCC (modern Unix-like compilers)
+ ****************************************************************************/
+
+#elif defined(__clang__) || defined(__GNUC__)
+
+/* No special pragmas needed */
+
+/*
+ * For modern compilers, a function pointer NULL is simply ((void*)0).
+ * va_list is typically a scalar type; simple assignment copies it.
+ */
+#define NOFUNC					((void*)0)
+#define copy_va_list(src,dest)	{ dest = (src); }
+
+/*****************************************************************************
  * Unknown compiler, whine and die.
  ****************************************************************************/
 

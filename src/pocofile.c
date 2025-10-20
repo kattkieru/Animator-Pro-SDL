@@ -1,7 +1,7 @@
 /* pocofuns.c - Misc poco library functions */
 #include "jimk.h"
 #include "errcodes.h"
-#include "ptrmacros.h"
+#include "fli.h"
 #include "pocoface.h"
 #include "pocolib.h"
 #include "palchunk.h"
@@ -10,198 +10,217 @@ extern Errcode builtin_err;
 
 /* A bunch of load/save file functions */
 
-static Errcode po_load_fli(Popot name)
 /*****************************************************************************
  * ErrCode LoadFlic(char *name)
  ****************************************************************************/
+static Errcode po_load_fli(Popot name)
 {
-if (name.pt == NULL)
-	return(builtin_err = Err_null_ref);
-return(resize_load_fli(name.pt));
+	if (name.pt == NULL) {
+		return builtin_err = Err_null_ref;
+	}
+	return resize_load_fli(name.pt);
 }
 
-static Errcode po_save_fli(Popot name)
 /*****************************************************************************
  * ErrCode SaveFlic(char *name)
  ****************************************************************************/
+static Errcode po_save_fli(Popot name)
 {
-if (name.pt == NULL)
-	return(builtin_err = Err_null_ref);
-return(save_fli(name.pt));
+	if (name.pt == NULL) {
+		return builtin_err = Err_null_ref;
+	}
+	return save_fli(name.pt);
 }
 
-static Errcode po_load_pic(Popot title)
 /*****************************************************************************
  * ErrCode LoadPic(char *name)
  ****************************************************************************/
+static Errcode po_load_pic(Popot title)
 {
-if (title.pt == NULL)
-	return(builtin_err = Err_null_ref);
-dirties();
-return(load_the_pic(title.pt) );
+	if (title.pt == NULL) {
+		return builtin_err = Err_null_ref;
+	}
+	dirties();
+	return load_the_pic(title.pt);
 }
 
-static Errcode po_save_pic(Popot title)
 /*****************************************************************************
  * ErrCode SavePic(char *name)
  ****************************************************************************/
+static Errcode po_save_pic(Popot title)
 {
-if (title.pt == NULL)
-	return(builtin_err = Err_null_ref);
-return(save_current_pictype(title.pt,vb.pencel));
+	if (title.pt == NULL) {
+		return builtin_err = Err_null_ref;
+	}
+	return save_current_pictype(title.pt, vb.pencel);
 }
 
-static Errcode po_load_screen_pic(Popot screen, Popot title)
 /*****************************************************************************
  * ErrCode LoadScreenPic(Screen *s, char *name)
  ****************************************************************************/
+static Errcode po_load_screen_pic(Popot screen, Popot title)
 {
-Rcel *s;
-if (title.pt == NULL)
-	return(builtin_err = Err_null_ref);
-if (screen.pt == NULL)
-	s = vb.pencel;
-else
-	s = screen.pt;
-dirties();
-return(load_any_picture(title.pt,s) );
+	Rcel* s;
+	if (title.pt == NULL) {
+		return builtin_err = Err_null_ref;
+	}
+	if (screen.pt == NULL) {
+		s = vb.pencel;
+	} else {
+		s = screen.pt;
+	}
+	dirties();
+	return load_any_picture(title.pt, s);
 }
 
-static Errcode po_save_screen_pic(Popot screen, Popot title)
 /*****************************************************************************
  * ErrCode SaveScreenPic(Screen *s, char *name)
  ****************************************************************************/
+static Errcode po_save_screen_pic(Popot screen, Popot title)
 {
-Rcel *s;
-if (title.pt == NULL)
-	return(builtin_err = Err_null_ref);
-if (screen.pt == NULL)
-	s = vb.pencel;
-else
-	s = screen.pt;
-return(save_current_pictype(title.pt,s));
+	Rcel* s;
+	if (title.pt == NULL) {
+		return builtin_err = Err_null_ref;
+	}
+	if (screen.pt == NULL) {
+		s = vb.pencel;
+	} else {
+		s = screen.pt;
+	}
+	return save_current_pictype(title.pt, s);
 }
 
-static Errcode po_load_cel(Popot name)
 /*****************************************************************************
  * ErrCode LoadCel(char *name)
  ****************************************************************************/
+static Errcode po_load_cel(Popot name)
 {
-if (name.pt == NULL)
-	return(builtin_err = Err_null_ref);
-return(load_the_cel(name.pt));
+	if (name.pt == NULL) {
+		return builtin_err = Err_null_ref;
+	}
+	return load_the_cel(name.pt);
 }
 
-static Errcode po_save_cel(Popot name)
 /*****************************************************************************
  * ErrCode SaveCel(char *name)
  ****************************************************************************/
+static Errcode po_save_cel(Popot name)
 {
-if (name.pt == NULL)
-	return(builtin_err = Err_null_ref);
-return(save_the_cel(name.pt));
+	if (name.pt == NULL) {
+		return builtin_err = Err_null_ref;
+	}
+	return save_the_cel(name.pt);
 }
 
-static Errcode po_load_path(Popot name)
 /*****************************************************************************
  * ErrCode LoadPath(char *name)
  ****************************************************************************/
+static Errcode po_load_path(Popot name)
 {
-if (name.pt == NULL)
-	return(builtin_err = Err_null_ref);
-return(load_path(name.pt));
+	if (name.pt == NULL) {
+		return builtin_err = Err_null_ref;
+	}
+	return load_path(name.pt);
 }
 
-static Errcode po_save_path(Popot name)
 /*****************************************************************************
  * ErrCode SavePath(char *name)
  ****************************************************************************/
+static Errcode po_save_path(Popot name)
 {
-if (name.pt == NULL)
-	return(builtin_err = Err_null_ref);
-return(save_path(name.pt));
+	if (name.pt == NULL) {
+		return builtin_err = Err_null_ref;
+	}
+	return save_path(name.pt);
 }
 
-static Errcode po_load_poly(Popot name)
 /*****************************************************************************
  * ErrCode LoadPoly(char *name)
  ****************************************************************************/
+static Errcode po_load_poly(Popot name)
 {
-if (name.pt == NULL)
-	return(builtin_err = Err_null_ref);
-return(load_polygon(name.pt));
+	if (name.pt == NULL) {
+		return builtin_err = Err_null_ref;
+	}
+	return load_polygon(name.pt);
 }
 
-static Errcode po_save_poly(Popot name)
 /*****************************************************************************
  * ErrCode SavePoly(char *name)
  ****************************************************************************/
+static Errcode po_save_poly(Popot name)
 {
-if (name.pt == NULL)
-	return(builtin_err = Err_null_ref);
-return(save_polygon(name.pt));
+	if (name.pt == NULL) {
+		return builtin_err = Err_null_ref;
+	}
+	return save_polygon(name.pt);
 }
 
-static Errcode po_load_colors(Popot name)
 /*****************************************************************************
  * ErrCode LoadColors(char *name)
  ****************************************************************************/
+static Errcode po_load_colors(Popot name)
 {
-if (name.pt == NULL)
-	return(builtin_err = Err_null_ref);
-return(load_palette(name.pt,1));
+	if (name.pt == NULL) {
+		return builtin_err = Err_null_ref;
+	}
+	return load_palette(name.pt, 1);
 }
 
-static Errcode po_save_colors(Popot name)
 /*****************************************************************************
  * ErrCode SaveColors(char *name)
  ****************************************************************************/
+static Errcode po_save_colors(Popot name)
 {
-if (name.pt == NULL)
-	return(builtin_err = Err_null_ref);
-return(pj_col_save(name.pt, vb.pencel->cmap));
+	if (name.pt == NULL) {
+		return builtin_err = Err_null_ref;
+	}
+	return pj_col_save(name.pt, vb.pencel->cmap);
 }
 
-static Errcode po_load_titles(Popot name)
 /*****************************************************************************
  * ErrCode LoadTitles(char *name)
  ****************************************************************************/
+static Errcode po_load_titles(Popot name)
 {
-if (name.pt == NULL)
-	return(builtin_err = Err_null_ref);
-return(load_titles(name.pt));
+	if (name.pt == NULL) {
+		return builtin_err = Err_null_ref;
+	}
+	return load_titles(name.pt);
 }
 
-static Errcode po_save_titles(Popot name)
 /*****************************************************************************
  * ErrCode SaveTitles(char *name)
  ****************************************************************************/
+static Errcode po_save_titles(Popot name)
 {
-if (name.pt == NULL)
-	return(builtin_err = Err_null_ref);
-return(save_titles(name.pt));
+	if (name.pt == NULL) {
+		return builtin_err = Err_null_ref;
+	}
+	return save_titles(name.pt);
 }
 
-static Errcode po_save_mask(Popot name)
 /*****************************************************************************
  * ErrCode SaveMask(char *name)
  ****************************************************************************/
+static Errcode po_save_mask(Popot name)
 {
-if (name.pt == NULL)
-	return(builtin_err = Err_null_ref);
-return(save_the_mask(name.pt));
+	if (name.pt == NULL) {
+		return builtin_err = Err_null_ref;
+	}
+	return save_the_mask(name.pt);
 }
 
-static Errcode po_load_mask(Popot name)
 /*****************************************************************************
  * ErrCode LoadMask(char *name)
  ****************************************************************************/
+static Errcode po_load_mask(Popot name)
 {
-if (name.pt == NULL)
-	return(builtin_err = Err_null_ref);
-return(load_the_mask(name.pt));
+	if (name.pt == NULL) {
+		return builtin_err = Err_null_ref;
+	}
+	return load_the_mask(name.pt);
 }
-
 
 /*----------------------------------------------------------------------------
  * library protos...
@@ -227,34 +246,29 @@ return(load_the_mask(name.pt));
  *--------------------------------------------------------------------------*/
 
 PolibAAFile po_libaafile = {
-po_load_fli,	"ErrCode LoadFlic(char *name);",
-po_save_fli,	"ErrCode SaveFlic(char *name);",
-po_load_pic,	"ErrCode LoadPic(char *name);",
-po_save_pic,	"ErrCode SavePic(char *name);",
-po_load_cel,	"ErrCode LoadCel(char *name);",
-po_save_cel,	"ErrCode SaveCel(char *name);",
-po_load_path,	"ErrCode LoadPath(char *name);",
-po_save_path,	"ErrCode SavePath(char *name);",
-po_load_poly,	"ErrCode LoadPoly(char *name);",
-po_save_poly,	"ErrCode SavePoly(char *name);",
-po_load_colors, "ErrCode LoadColors(char *name);",
-po_save_colors, "ErrCode SaveColors(char *name);",
-po_load_titles, "ErrCode LoadTitles(char *name);",
-po_save_titles, "ErrCode SaveTitles(char *name);",
-po_load_mask,	"ErrCode LoadMask(char *name);",
-po_save_mask,	"ErrCode SaveMask(char *name);",
-po_save_screen_pic,
-	"ErrCode SaveScreenPic(Screen *s, char *name);",
-po_load_screen_pic,
-	"ErrCode LoadScreenPic(Screen *s, char *name);",
+	po_load_fli,        "ErrCode LoadFlic(char *name);",
+	po_save_fli,        "ErrCode SaveFlic(char *name);",
+	po_load_pic,        "ErrCode LoadPic(char *name);",
+	po_save_pic,        "ErrCode SavePic(char *name);",
+	po_load_cel,        "ErrCode LoadCel(char *name);",
+	po_save_cel,        "ErrCode SaveCel(char *name);",
+	po_load_path,       "ErrCode LoadPath(char *name);",
+	po_save_path,       "ErrCode SavePath(char *name);",
+	po_load_poly,       "ErrCode LoadPoly(char *name);",
+	po_save_poly,       "ErrCode SavePoly(char *name);",
+	po_load_colors,     "ErrCode LoadColors(char *name);",
+	po_save_colors,     "ErrCode SaveColors(char *name);",
+	po_load_titles,     "ErrCode LoadTitles(char *name);",
+	po_save_titles,     "ErrCode SaveTitles(char *name);",
+	po_load_mask,       "ErrCode LoadMask(char *name);",
+	po_save_mask,       "ErrCode SaveMask(char *name);",
+	po_save_screen_pic, "ErrCode SaveScreenPic(Screen *s, char *name);",
+	po_load_screen_pic, "ErrCode LoadScreenPic(Screen *s, char *name);",
 };
 
-Poco_lib po_load_save_lib =
-	{
+Poco_lib po_load_save_lib = {
 	NULL,
 	"Autodesk Animator File",
-	(Lib_proto *)&po_libaafile, POLIB_AAFILE_SIZE,
-	};
-
-
-
+	(Lib_proto*)&po_libaafile,
+	POLIB_AAFILE_SIZE,
+};

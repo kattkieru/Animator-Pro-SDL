@@ -39,11 +39,12 @@
  * include the usual header files...
  *--------------------------------------------------------------------------*/
 
+#include <stdio.h>
+
 #include "errcodes.h"
 #include "pocolib.h"
 #include "memory.h"
 #include "filepath.h"
-#include "lstdio.h"
 
 /*----------------------------------------------------------------------------
  * data and constants...

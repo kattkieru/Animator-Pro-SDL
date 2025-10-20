@@ -24,10 +24,6 @@ struct _stdio_error_check_ {
 #define getc(fp)	fgetc((fp))
 #define putc(c,fp)	fputc((c),(fp))
 
-#ifndef _SIZE_T_DEFINED_
-	typedef unsigned int size_t;
-#endif
-
 typedef void **FILE;
 typedef long fpos_t;
 

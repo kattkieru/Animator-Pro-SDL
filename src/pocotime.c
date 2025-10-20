@@ -6,10 +6,10 @@
 #include "pocoface.h"
 #include "pocolib.h"
 #include "auto.h"
+#include "syslib.h"
 
 extern Errcode builtin_err;
 
-ULONG pj_clock_1000();
 void next_frame();
 void prev_frame();
 void flx_seek_frame(int frame);

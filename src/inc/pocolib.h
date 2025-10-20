@@ -1036,7 +1036,7 @@ typedef struct porexlib
 	int (*pl_getmucolors)(Pixel** indicies, struct rgb3** lastrgbs, struct rgb3** idealrgbs);
 	int (*pl_findpoe)(char* poename, Lib_proto** plibreturn);
 	Errcode (*pl_overtime)(OTFunc* effect, void* data);
-	Boolean (*pl_checkabort)(void* data);
+	bool (*pl_checkabort)(void* data);
 	Errcode (*pl_oversegment)(OTFunc* effect, void* data);
 	Errcode (*pl_overall)(OTFunc* effect, void* data);
 	char* vb; /* for internal bugfix/patch usage only! */

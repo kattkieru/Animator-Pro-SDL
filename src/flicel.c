@@ -96,7 +96,7 @@ void free_the_cel(void)
 	free_fcel(&thecel);
 }
 
-static void noask_delete_the_cel(void)
+void noask_delete_the_cel(void)
 {
 	free_the_cel();
 	pj_delete(cel_name);

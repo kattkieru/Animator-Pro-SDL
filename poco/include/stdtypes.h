@@ -1,6 +1,8 @@
 #ifndef STDTYPES_H
 #define STDTYPES_H
 
+#include <stddef.h>
+
 typedef unsigned char UBYTE;
 typedef signed char BYTE;
 typedef unsigned short USHORT;
