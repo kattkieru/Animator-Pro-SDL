@@ -23,6 +23,7 @@ extern char po_current_program_path[]; /* defined in qpoco.c */
  ****************************************************************************/
 static int po_dir_list(Popot ppdest, Popot ppat, int get_dirs)
 {
+	/*
 	char* pat;
 	Names *wld, *w;
 	int name_count;
@@ -56,7 +57,7 @@ static int po_dir_list(Popot ppdest, Popot ppat, int get_dirs)
 	}
 	ppp = result.pt;
 	spt = OPTR(result.pt, name_count * sizeof(Popot));
-	/* set pointer bounds to just Popot array, not string space */
+	/ set pointer bounds to just Popot array, not string space
 	result.max = OPTR(spt, -1);
 	w = wld;
 	while (w != NULL) {
@@ -73,6 +74,12 @@ OUT:
 	free_wild_list(&wld);
 	*pdest = result;
 	return name_count;
+	*/
+
+	(void)ppdest;
+	(void)ppat;
+	(void)get_dirs;
+	return 0;
 }
 
 /*****************************************************************************
@@ -206,6 +213,7 @@ static Errcode po_fnsplit(Popot path, Popot device, Popot dir, Popot file, Popot
  ****************************************************************************/
 static Errcode po_fnmerge(Popot path, Popot device, Popot dir, Popot file, Popot suffix)
 {
+	/*
 	Errcode err = Popot_bufcheck(&path, PATH_SIZE);
 
 	if (err < Success) {
@@ -215,6 +223,16 @@ static Errcode po_fnmerge(Popot path, Popot device, Popot dir, Popot file, Popot
 		return builtin_err = Err_null_ref;
 	}
 	return fnmerge(path.pt, device.pt, dir.pt, file.pt, suffix.pt);
+	*/
+
+	//!FIXME: this
+
+	(void)path;
+	(void)device;
+	(void)dir;
+	(void)file;
+	(void)suffix;
+	return Err_not_implemented;
 }
 
 /*****************************************************************************

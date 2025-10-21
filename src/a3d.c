@@ -881,7 +881,7 @@ static void ado_clear(void)
 }
 
 /* Clear all optics motion */
-static void ado_clear_all(void)
+void ado_clear_all(void)
 {
 	ado_clear_stack();
 	pj_delete(ppoly_name);
@@ -1432,7 +1432,7 @@ static Errcode ado_mouse_ptfunc(Pentool *pt, Wndo *w)
 }
 
 /* retrieve optics state from temp file */
-static Errcode get_a3d_state(void)
+Errcode get_a3d_state(void)
 {
 	ado_clear();
 	if (pj_exists(optics_name)) {
@@ -1442,7 +1442,7 @@ static Errcode get_a3d_state(void)
 }
 
 /* save optics state to temp file */
-static Errcode set_a3d_state(void)
+Errcode set_a3d_state(void)
 {
 	Errcode err;
 

@@ -31,6 +31,15 @@
 
 #define norm_pointer(c)  ((void *)(c))
 
+/* Provide compile-time assertion macro if not already available. */
+#ifndef STATIC_ASSERT
+#define ASSERT_CONCAT_(a, b)    a##b
+#define ASSERT_CONCAT(a, b)     ASSERT_CONCAT_(a, b)
+#define STATIC_ASSERT(module, e) \
+    struct ASSERT_CONCAT(static_assert_##module##_line_, __LINE__) \
+        { unsigned int bf : !!(e); }
+#endif
+
 /*****************************************************************************
  * Watcom C/386 v8.0
  ****************************************************************************/
@@ -139,7 +148,8 @@ extern char *_STACKLOW; 					/* not sure what these are for, */
  * va_list is typically a scalar type; simple assignment copies it.
  */
 #define NOFUNC					((void*)0)
-#define copy_va_list(src,dest)	{ dest = (src); }
+#undef copy_va_list
+#define copy_va_list(src,dest)	va_copy(dest,src)
 
 /*****************************************************************************
  * Unknown compiler, whine and die.

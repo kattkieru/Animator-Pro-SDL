@@ -193,6 +193,16 @@ const char* pj_sdl_preferences_path() {
 }
 
 
+/*--------------------------------------------------------------
+ * This is used all over, but the original returned a long so I'm
+ * intentionally doing that conversion here.
+ *--------------------------------------------------------------*/
+ULONG pj_clock_1000()
+{
+	return (ULONG)SDL_GetTicks();
+}
+
+
 /*--------------------------------------------------------------*/
 /*
  * File Dialog Support

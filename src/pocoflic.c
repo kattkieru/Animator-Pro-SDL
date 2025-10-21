@@ -6,6 +6,8 @@
 #include "pjbasics.h"
 #include "fli.h"
 #include "pocolib.h"
+#include "jimk.h"
+
 
 /*----------------------------------------------------------------------------
  * Local types and data...
@@ -251,7 +253,7 @@ static bool until_time_expires(Flic *pflic)
 	if (pflic->eventdata < pj_clock_1000()){
 		return false;	// clock exceeds expiry time, stop the flic
 		}
-	else
+	else {
 		return true;	// keep playing
 		}
 }
@@ -319,10 +321,11 @@ static Errcode play_until(Flic *pflic, EventFunc *event_detect)
 		 * seek back to frame 1 (the brun frame).
 		 *------------------------------------------------------------------*/
 
-		if (pflic->event_data.cur_frame == BEFORE_FIRST_FRAME) {
-			pj_seek(flif->fd, flihdr->frame1_oset, JSEEK_START);
-			pflic->event_data.cur_frame = 0;
-		} else {
+        if (pflic->event_data.cur_frame == BEFORE_FIRST_FRAME) {
+            /* Seek to first frame using xfile API */
+            (void)xffseek_tell(flif->xf, flihdr->frame1_oset, XSEEK_SET);
+            pflic->event_data.cur_frame = 0;
+        } else {
 			++pflic->event_data.cur_frame;
 		}
 
@@ -351,11 +354,12 @@ static Errcode play_until(Flic *pflic, EventFunc *event_detect)
 
 		++pflic->frames_played;
 
-		if (pflic->event_data.cur_frame == pflic->event_data.num_frames) {
-			pj_seek(flif->fd, flihdr->frame2_oset, JSEEK_START);
-			++pflic->event_data.cur_loop;
-			pflic->event_data.cur_frame = 0;
-		}
+        if (pflic->event_data.cur_frame == pflic->event_data.num_frames) {
+            /* Seek to second frame using xfile API */
+            (void)xffseek_tell(flif->xf, flihdr->frame2_oset, XSEEK_SET);
+            ++pflic->event_data.cur_loop;
+            pflic->event_data.cur_frame = 0;
+        }
 
 		/*--------------------------------------------------------------------
 		 * call the event detector repeatedly, until it requests a stop, or

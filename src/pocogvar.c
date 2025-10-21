@@ -13,8 +13,8 @@
  *		to shut down the whole show, we just report Err_not_found on a
  *		retrieval, or flat-out ignore the error on a store.
  *
- *		The global string vars come in two flavors, permenant and temporary.
- *		The permenant vars are stored in a file in the resource directory;
+ *		The global string vars come in two flavors, permanent and temporary.
+ *		The permanent vars are stored in a file in the resource directory;
  *		nothing makes them go away except an explicit delete request.  The
  *		temporary ones are stored in a PJ tempfile (device '=:'), and will
  *		disappear when a 'Reset' is done, or when a Quit/Abandon happens.
@@ -28,7 +28,7 @@
  *		routine dumps all the variables back into the two files, if the
  *		change counter is non-zero.  The logic for deleting a variable is
  *		also pretty cheesy:  we free up the value string, and then set the
- *		name field in the Globalv structure to '\0' to indicate the var has
+ *		name field in the Globallv structure to '\0' to indicate the var has
  *		been deleted.  We don't unlink the var from the list, we just leave
  *		the 'tombstone' entry linked in for simplicity.  When the list is
  *		saved, the tombstones are skipped so that deleted vars don't get
@@ -40,6 +40,7 @@
  *--------------------------------------------------------------------------*/
 
 #include <stdio.h>
+#include <string.h>
 
 #include "errcodes.h"
 #include "pocolib.h"
@@ -68,16 +69,16 @@ typedef struct globalv {
 
 static Globalv	*varlist  = NULL;
 static Globalv	*listnext = NULL;
-static Boolean	listchangecount = 0;
+static bool	listchangecount = 0;
 
 /*----------------------------------------------------------------------------
  * code...
  *--------------------------------------------------------------------------*/
 
-static char *new_value(char *value)
 /*****************************************************************************
  * alloc memory for a string and copy the existing string into it.
  ****************************************************************************/
+static char *new_value(char *value)
 {
 	char	*newvalue;
 
@@ -202,12 +203,12 @@ FREE_LIST:
 	return err;
 }
 
-static Boolean load_a_file(char *fname)
+static bool load_a_file(char *fname)
 /*****************************************************************************
  * load vars from one of the var files, return TRUE if anything loaded.
  ****************************************************************************/
 {
-	Boolean anyloaded = FALSE;
+	bool anyloaded = FALSE;
 	FILE	*ifile;
 	char	vname[MAX_VNAME_LEN];
 	char	vvalue[MAX_VVALUE_LEN];
@@ -237,7 +238,7 @@ static Errcode load_global_vars(void)
  * load the global vars from the temp files into a linked list.
  ****************************************************************************/
 {
-	Boolean anyloaded;
+	bool anyloaded;
 	Globalv *dmyvar;
 
 	if (permfpath[0] == 0x00) { 	// one time, make perm filepathname.

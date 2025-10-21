@@ -465,7 +465,7 @@ static void qload_polygon(void)
 
 static void qsave_polygon(void)
 {
-	char buf[FILENAME_MAX];
+    char buf[PATH_MAX];
 	char *path = vset_get_filename(stack_string("save_poly",buf),
 								".PLY",save_str,POLY_PATH,NULL, true);
 

@@ -1,6 +1,8 @@
 /* pocomode.c - poco library functions that get/set drawing state
    and other variables. */
 
+#include <string.h>
+
 #include "jimk.h"
 #include "errcodes.h"
 #include "pocoface.h"
