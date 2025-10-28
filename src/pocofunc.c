@@ -10,6 +10,8 @@
 #include "errcodes.h"
 #include "options.h"
 #include "poly.h"
+#include "redo.h"
+#include "render.h"
 
 extern char po_chainto_program_path[];  // in qpoco.c
 extern Errcode builtin_err;

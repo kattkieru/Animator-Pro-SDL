@@ -212,8 +212,11 @@ extern Errcode
 pdr_load_any_flicel(char *path, char *tempname, char *fliname, Flicel **pfcel);
 
 extern Errcode load_the_cel(char *path);
+extern Errcode save_the_cel(char* path);
 extern Errcode go_load_the_cel(void);
 extern void qload_the_cel(void);
 extern void qsave_the_cel(void);
+
+extern Errcode cel_from_rect(Rectangle* rect, bool render_only);
 
 #endif

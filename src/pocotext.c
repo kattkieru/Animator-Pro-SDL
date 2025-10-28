@@ -1,6 +1,8 @@
 /* This file implements the Poco Text and Titling libraries.
  */
 
+#include <string.h>
+
 #include "errcodes.h"
 #include "jimk.h"
 #include "pocolib.h"
@@ -8,17 +10,25 @@
 #include "rastext.h"
 #include "wordwrap.h"
 #include "title.h"
+#include "render.h"
+#include "fli.h"
+#include "palmenu.h"
+#include "pentools.h"
 
 
 void get_uvfont_name(char *buf);
 void qfont_text();
 char *pj_get_path_name(char *path);
-Errcode do_titles(Boolean	with_menu);	/* aka do text */
+Errcode do_titles(bool with_menu);	/* aka do text */
 
-static int check_font_width(int width)
+extern Errcode load_the_font(char *path); // from pjfont.c
+extern Errcode load_titles(char *title);  // from textfile.c
+
+
 /*
  * Make sure width is at least as wide as minimum font width.
  */
+static int check_font_width(int width)
 {
 int widest;
 widest = widest_char(uvfont);
@@ -161,14 +171,14 @@ else
 	vs.tit_just = just;
 }
 
-static Boolean po_can_scale_font()
 /*****************************************************************************
- * Boolean CanScaleFont(void);
+ * bool CanScaleFont(void);
  *		return TRUE if it's a font that can be scaled
  *		(Type1 or other outline font.)
  ****************************************************************************/
+static bool po_can_scale_font()
 {
-	return ((uvfont->flags & VFF_SCALEABLE) ? TRUE : FALSE);
+	return ((uvfont->flags & VFF_SCALEABLE) ? true : false);
 }
 
 static Errcode po_scale_font(int height)
@@ -350,11 +360,11 @@ static Popot po_title_get_text(void)
  }
 
 
-static Boolean po_title_has_text(void)
 /*****************************************************************************
- *"Boolean	TitleHasText(void);"
+ *"bool	TitleHasText(void);"
  *		Returns TRUE if there is some titling text.
  ****************************************************************************/
+static bool po_title_has_text(void)
  {
  	return pj_exists(text_name);
  }
@@ -416,7 +426,7 @@ static Errcode po_title_render(void)
 	Errcode err;
 
 	free_render_cashes();		/* AAARRRR */
- 	err = do_titles(FALSE);
+ 	err = do_titles(false);
 	make_render_cashes();
 	return err;
  }
@@ -471,7 +481,7 @@ qfont_text,
 	"void    Qfont(void);",
 /* From here on new with Ani Pro 1.5 */
 po_can_scale_font,
-	"Boolean CanScaleFont(void);",
+	"bool CanScaleFont(void);",
 po_scale_font,
 	"Errcode ScaleFont(int height);",
 po_set_font_spacing,
@@ -508,7 +518,7 @@ po_title_set_text_from_file,
 po_title_get_text,
 	"char 	*TitleGetText(void);",
 po_title_has_text,
-	"Boolean	TitleHasText(void);",
+	"Boolean TitleHasText(void);",
 po_title_set_position,
 	"void	TitleSetPosition(int x, int y, int w, int h);",
 po_title_get_position,

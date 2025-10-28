@@ -2,11 +2,27 @@
 #include "jimk.h"
 #include "errcodes.h"
 #include "fli.h"
+#include "flicel.h"
 #include "pocoface.h"
 #include "pocolib.h"
 #include "palchunk.h"
+#include "textedit.h"
+#include "mask.h"
 
 extern Errcode builtin_err;
+
+extern Errcode save_fli(char *name); // from savefli.c
+extern Errcode load_the_pic(char* title); // from vpaint.c
+
+/* from files.c */
+extern Errcode load_path(char *name);
+extern Errcode save_path(char *name);
+extern Errcode load_polygon(char *name);
+extern Errcode save_polygon(char *name);
+
+extern Errcode load_palette(char *title, int fitting); // from palet2.c
+
+extern Errcode save_titles(char *title); // from options.c
 
 /* A bunch of load/save file functions */
 

@@ -1,5 +1,9 @@
 set(REXLIB_SRC_FILES
 	rexhost/keytext.c
+	rexhost/rexload.c
+
+	aasyslib.c
+	stdiolib.c
 	)
 
 add_library(minirex ${REXLIB_SRC_FILES})

@@ -3,6 +3,7 @@
 
 /* errcode values used by our routines */
 #include <stddef.h>
+#include <errno.h>
 
 /* no error */
 #define Success (0)

@@ -18,12 +18,23 @@
 #include "poly.h"
 #include "inks.h"
 #include "render.h"
+#include "cfit.h"
+#include "flood.h"
+#include "sep.h"
 
 extern Errcode builtin_err;
 extern Poly working_poly;
 
 
 extern Errcode rend_circ(int x, int y, int radius);
+
+extern Errcode po_arrays_to_poly(Poly* p, int ptcount, Popot* px, Popot* py); // from pocolibs.c
+
+extern int make_spiral_poly(int x0, int y0, int rad, int itheta, long ttheta); // from spiral.c
+
+extern Errcode csd_render_poly(Poly* poly, bool filled, bool closed); // from polytool.c
+
+extern int ell_points(int bothrad); // from ellipse.c
 
 
 /***** ink oriented graphics function (things that draw something in

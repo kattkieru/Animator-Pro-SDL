@@ -1,6 +1,8 @@
 /* pocouser.c - poco library functions to read input state and
    standard dialog boxes. */
 
+#include <string.h>
+
 #include "errcodes.h"
 #include "linklist.h"
 #include "jimk.h"
@@ -11,25 +13,30 @@
 #include "softmenu.h"
 #include "commonst.h"
 #include "textedit.h"
+#include "marqi.h"
+#include "wildlist.h"
+#include "scroller.h"
 
-extern Boolean hide_mouse(void);
-extern Boolean show_mouse(void);
+extern bool hide_mouse(void);
+extern bool show_mouse(void);
 extern int qcolor();
-extern builtin_err;
+extern Errcode builtin_err;
 extern void disp_line_alot(Short_xy *v);
 void cleanup_toptext();
 Errcode po_poly_to_arrays(Poly *p, Popot *x, Popot *y);
 Errcode po_arrays_to_poly(Poly *p, int ptcount, Popot *px, Popot *py);
-extern Boolean po_UdSlider(long vargcount, long vargsize, 
+extern bool po_UdSlider(long vargcount, long vargsize,
 					Popot inum, int min, int max,
 				    Popot update,  Popot data, Popot pofmt, ...);
+
+extern void full_screen_edit(Text_file *gf); // from qpocoed.c
 
 /*****************************************************************************
 
 /* abort handling... */
 
 static struct {
-	Boolean abortable;
+	bool abortable;
 	void	*abort_handler;
 	Popot	abort_data;
 	} abort_control;
@@ -43,27 +50,27 @@ void po_init_abort_control(int abortable, void *handler)
 	abort_control.abort_handler = handler;
 }
 
-Boolean po_get_abortable(void)
+bool po_get_abortable(void)
 /*****************************************************************************
- * Boolean GetAbort(void)
+ * bool GetAbort(void)
  ****************************************************************************/
 {
 	return abort_control.abortable;
 }
 
-Boolean po_set_abortable(Boolean abort)
+bool po_set_abortable(bool abort)
 /*****************************************************************************
- * Boolean SetAbort(Boolean abort)
+ * bool SetAbort(bool abort)
  ****************************************************************************/
 {
-	Boolean was_abortable = abort_control.abortable;
+	bool was_abortable = abort_control.abortable;
 	abort_control.abortable  = abort;
 	return was_abortable;
 }
 
 void po_set_abort_handler(Popot abort_handler, Popot abort_data)
 /*****************************************************************************
- * void SetAbortHandler(Boolean (*handler)(void *data), void *data)
+ * void SetAbortHandler(bool (*handler)(void *data), void *data)
  *
  * specify a poco routine to get called if the user aborts the poco program.
  *	 the specified routine is called immediately after the user selects YES
@@ -75,7 +82,7 @@ void po_set_abort_handler(Popot abort_handler, Popot abort_data)
  *	 the routine could re-enable them, but nasty recursion issues must be
  *	 dealt with if it does.  the poco abort handler routine must return a
  *	 boolean value indicating whether pj should complete the abort processing
- *	 (TRUE), or ignore it (FALSE).	the only legitimate use of this is to
+ *	 (true), or ignore it (false).	the only legitimate use of this is to
  *	 allow a deffered abort (the handler sets a flag telling itself to abort
  *	 on the next iteration of its main loop, or whatever).
  *
@@ -103,13 +110,13 @@ void po_set_abort_handler(Popot abort_handler, Popot abort_data)
 	return;
 }
 
-Boolean po_check_abort(void *nobody)
+bool po_check_abort(void *nobody)
 /*****************************************************************************
  * handle abort checking and invokation of (optional) abort handler routine.
  *	see comments under po_set_abort_handler, above.
  ****************************************************************************/
 {
-	Boolean mouse_was_on;
+	bool mouse_was_on;
 	Errcode err;
 	Pt_num	retval;
 
@@ -121,24 +128,24 @@ Boolean po_check_abort(void *nobody)
 			if (soft_yes_no_box("poco_abort"))
 				if (NULL == abort_control.abort_handler)
 					{
-					return TRUE;
+					return true;
 					}
 				else
 					{
-					abort_control.abortable = FALSE; /* prevent bad recursion */
+					abort_control.abortable = false; /* prevent bad recursion */
 					err = poco_cont_ops(abort_control.abort_handler, &retval,
 								sizeof(Popot), abort_control.abort_data);
 					if (err < Success)
 						return builtin_err = err;
-					if (retval.i != FALSE)
-						return TRUE;
-					abort_control.abortable = TRUE;
+					if (retval.i != false)
+						return true;
+					abort_control.abortable = true;
 					}
 			if (!mouse_was_on)
 				hide_mouse();
 			}
 		}
-	return(FALSE);
+	return false;
 }
 
 typedef struct iparams
@@ -254,11 +261,11 @@ static void po_physical_wait_input(Iparms pp)
 po_physical_input(&pp, MMOVE|ANY_CLICK);
 }
 
-static Boolean po_physical_rub_move_box(Popot x, Popot y, Popot w, Popot h
-, Boolean clip_to_screen)
+static bool po_physical_rub_move_box(Popot x, Popot y, Popot w, Popot h
+, bool clip_to_screen)
 /*****************************************************************************
- * Boolean PhysicalRubMoveBox(int *x, int *y, int *w, int *h
- , Boolean clip_to_screen)
+ * bool PhysicalRubMoveBox(int *x, int *y, int *w, int *h
+ , bool clip_to_screen)
  ****************************************************************************/
 {
 Wscreen *ws= icb.input_screen;
@@ -270,7 +277,7 @@ Rectangle *pclip_rect = NULL;
 if (x.pt == NULL || y.pt == NULL || w.pt == NULL || h.pt == NULL)
 	{
 	builtin_err = Err_null_ref;
-	return(FALSE);
+	return(false);
 	}
 rect.x		= *((int *)(x.pt));
 rect.y		= *((int *)(y.pt));
@@ -283,19 +290,19 @@ if (clip_to_screen)
 	}
 init_marqihdr(&md,ws->viscel,NULL,ws->SWHITE,ws->SBLACK);
 if (marqmove_rect(&md, &rect, pclip_rect) < 0)
-	return FALSE;
+	return false;
 *((int *)(x.pt)) = rect.x;
 *((int *)(y.pt)) = rect.y;
 *((int *)(w.pt)) = rect.width;
 *((int *)(h.pt)) = rect.height;
-return TRUE;
+return true;
 }
 
 /* Poco 'marqi' routines to define geometric shapes */
 
-static Boolean po_rub_box(Popot x, Popot y, Popot w, Popot h)
+static bool po_rub_box(Popot x, Popot y, Popot w, Popot h)
 /*****************************************************************************
- * Boolean RubBox(int *x, int *y, int *w, int *h)
+ * bool RubBox(int *x, int *y, int *w, int *h)
  ****************************************************************************/
 {
 Rectangle rect;
@@ -303,23 +310,23 @@ Rectangle rect;
 if (x.pt == NULL || y.pt == NULL || w.pt == NULL || h.pt == NULL)
 	{
 	builtin_err = Err_null_ref;
-	return(FALSE);
+	return(false);
 	}
 if(cut_out_rect(&rect) < 0)
-	return(FALSE);
+	return(false);
 else
 	{
 	*((int *)(x.pt)) = rect.x;
 	*((int *)(y.pt)) = rect.y;
 	*((int *)(w.pt)) = rect.width;
 	*((int *)(h.pt)) = rect.height;
-	return(TRUE);
+	return(true);
 	}
 }
 
-static Boolean po_rub_line(int x1, int y1, Popot x2, Popot y2)
+static bool po_rub_line(int x1, int y1, Popot x2, Popot y2)
 /*****************************************************************************
- * Boolean RubLine(int x1, int y1, int *x2, int *y2)
+ * bool RubLine(int x1, int y1, int *x2, int *y2)
  ****************************************************************************/
 {
 Short_xy xys[2];
@@ -328,26 +335,26 @@ int ret;
 if (x2.pt == NULL || y2.pt == NULL)
 	{
 	builtin_err = Err_null_ref;
-	return(FALSE);
+	return(false);
 	}
 xys[0].x = x1;
 xys[0].y = y1;
 ret = rubba_vertex(&xys[0],&xys[1],&xys[0],disp_line_alot,vs.ccolor);
 cleanup_toptext();
 if(ret < 0)
-	return(FALSE);
+	return(false);
 else
 	{
 	*((int *)(x2.pt)) = xys[1].x;
 	*((int *)(y2.pt)) = xys[1].y;
-	return(TRUE);
+	return(true);
 	}
 }
 
 
-static Boolean po_rub_circle(Popot x, Popot y, Popot rad)
+static bool po_rub_circle(Popot x, Popot y, Popot rad)
 /*****************************************************************************
- * Boolean RubCircle(int *x, int *y, int *rad)
+ * bool RubCircle(int *x, int *y, int *rad)
  ****************************************************************************/
 {
 Circle_p circp;
@@ -355,17 +362,17 @@ Circle_p circp;
 if (x.pt == NULL || y.pt == NULL || rad.pt == NULL)
 	{
 	builtin_err = Err_null_ref;
-	return(FALSE);
+	return(false);
 	}
 wait_wndo_input(ANY_CLICK);
 if (!ISDOWN(MBPEN))
-	return(FALSE);
+	return(false);
 if(get_rub_circle(&circp.center,&circp.diam,vs.ccolor) < 0)
-	return(FALSE);
+	return(false);
 *((int *)(x.pt)) = circp.center.x;
 *((int *)(y.pt)) = circp.center.y;
 *((int *)(rad.pt)) = circp.diam>>1;
-return(TRUE);
+return(true);
 }
 
 
@@ -394,9 +401,9 @@ free_polypoints(&p);
 return(err);
 }
 
-static Boolean po_drag_box(Popot x, Popot y, Popot w, Popot h)
+static bool po_drag_box(Popot x, Popot y, Popot w, Popot h)
 /*****************************************************************************
- * Boolean DragBox(int *x, int *y, int *w, int *h)
+ * bool DragBox(int *x, int *y, int *w, int *h)
  ****************************************************************************/
 {
 	Rectangle rect;
@@ -404,7 +411,7 @@ static Boolean po_drag_box(Popot x, Popot y, Popot w, Popot h)
 	if (x.pt == NULL || y.pt == NULL || w.pt == NULL || h.pt == NULL)
 		{
 		builtin_err = Err_null_ref;
-		return(FALSE);
+		return(false);
 		}
 
 	rect.x		= *((int *)(x.pt));
@@ -419,10 +426,10 @@ static Boolean po_drag_box(Popot x, Popot y, Popot w, Popot h)
 			*((int *)(y.pt)) = rect.y;
 			*((int *)(w.pt)) = rect.width;
 			*((int *)(h.pt)) = rect.height;
-			return TRUE;
+			return true;
 			}
 
-		return FALSE;
+		return false;
 }
 
 static int po_ttextf(long vargcount, long vargsize, Popot pofmt, ...)
@@ -452,7 +459,7 @@ static Errcode po_ErrBox(long vargcount, long vargsize, Errcode err, Popot pofmt
 char etext[ERRTEXT_SIZE];
 va_list args;
 char *fmt;
-Boolean mouse_was_on;
+bool mouse_was_on;
 
 if(!get_errtext(err,etext))
 	return(err);
@@ -484,7 +491,7 @@ static void po_TextBox(long vargcount, long vargsize, Popot pofmt, ...)
 {
 va_list args;
 char *fmt;
-Boolean mouse_was_on;
+bool mouse_was_on;
 
 va_start(args, pofmt);
 
@@ -499,15 +506,15 @@ va_end(args);
 }
 
 
-static Boolean po_YesNo(long vargcount, long vargsize, Popot question, ...)
+static bool po_YesNo(long vargcount, long vargsize, Popot question, ...)
 /*****************************************************************************
- * Boolean Qquestion(char *question, ...)
+ * bool Qquestion(char *question, ...)
  ****************************************************************************/
 {
 va_list args;
 char *fmt;
-Boolean rv;
-Boolean mouse_was_on;
+bool rv;
+bool mouse_was_on;
 
 va_start(args, question);
 fmt = question.pt;
@@ -521,14 +528,14 @@ va_end(args);
 return rv;
 }
 
-static Boolean po_Slider(Popot inum, int min, int max, Popot hailing)
+static bool po_Slider(Popot inum, int min, int max, Popot hailing)
 /*****************************************************************************
- * Boolean Qnumber(int *num, int min, int max, char *header)
+ * bool Qnumber(int *num, int min, int max, char *header)
  ****************************************************************************/
 {
 short num;
-Boolean cancel;
-Boolean mouse_was_on;
+bool cancel;
+bool mouse_was_on;
 
 if (hailing.pt == NULL)
 	hailing.pt = "";
@@ -547,7 +554,7 @@ if ((num < SHRT_MIN) ||
 	return(builtin_err = Err_parameter_range);
 
 mouse_was_on = show_mouse();
-if (FALSE != (cancel = qreq_number(&num,min,max,"%s",hailing.pt)))
+if (false != (cancel = qreq_number(&num,min,max,"%s",hailing.pt)))
 	*((int *)(inum.pt)) = num;
 if(!mouse_was_on)
 	hide_mouse();
@@ -583,7 +590,7 @@ va_list args;
 char	*choices[TBOX_MAXCHOICES+1];
 char	*fmt;
 Errcode rv;
-Boolean mouse_was_on;
+bool mouse_was_on;
 
 /* do some error checking on parameters */
 if (ccount > TBOX_MAXCHOICES)
@@ -606,15 +613,15 @@ va_end(args);
 return rv;
 }
 
-static Boolean po_FileMenu(Popot suffix, Popot button,
+static bool po_FileMenu(Popot suffix, Popot button,
 		Popot inpath, Popot outpath, int force_suffix, Popot prompt)
 /*****************************************************************************
- * Boolean Qfile(char *suffix, char *button,
- *	  char *inpath, char *outpath, Boolean force_suffix, char *header)
+ * bool Qfile(char *suffix, char *button,
+ *	  char *inpath, char *outpath, bool force_suffix, char *header)
  ****************************************************************************/
 {
-Boolean rv = TRUE;
-Boolean mouse_was_on;
+bool rv = true;
+bool mouse_was_on;
 char titbuf[40];
 
 if (prompt.pt == NULL || 0 == strlen(prompt.pt))
@@ -622,7 +629,7 @@ if (prompt.pt == NULL || 0 == strlen(prompt.pt))
 
 if (suffix.pt == NULL || 0 == strlen(suffix.pt) || '.' != *(char *)(suffix.pt))
 	{
-	force_suffix = FALSE;
+	force_suffix = false;
 	suffix.pt = ".*";
 	}
 
@@ -642,7 +649,7 @@ mouse_was_on = show_mouse();
 if (NULL == (outpath.pt = pj_get_filename(prompt.pt, suffix.pt,
 		button.pt, inpath.pt, outpath.pt, force_suffix, NULL, NULL)))
 	{
-	rv = FALSE;
+	rv = false;
 	}
 if (!mouse_was_on)
 	hide_mouse();
@@ -652,26 +659,26 @@ return rv;
 }
 
 
-static Boolean po_qstring(Popot strbuf, int bufsize, Popot hailing)
+static bool po_qstring(Popot strbuf, int bufsize, Popot hailing)
 /*****************************************************************************
- * Boolean Qstring(char *string, int size, char *header)
+ * bool Qstring(char *string, int size, char *header)
  ****************************************************************************/
 {
-Boolean rv;
-Boolean mouse_was_on;
+bool rv;
+bool mouse_was_on;
 
 if (hailing.pt == NULL)
 	hailing.pt = "";
 if (bufsize < 2)
 	{
 	builtin_err = Err_buf_too_small;
-	return(FALSE);
+	return(false);
 	}
 mouse_was_on = show_mouse();
 if (Popot_bufcheck(&strbuf, bufsize) >= Success)
 	rv = qreq_string(strbuf.pt,bufsize-1,"%s", hailing.pt);
 else
-	rv = FALSE;
+	rv = false;
 if (!mouse_was_on)
 	hide_mouse();
 return rv;
@@ -685,7 +692,7 @@ static int po_some_choice(Popot pchoices, int ccount
 #define CHMAX 60
 char *pbuf[CMAX];
 int i;
-Boolean mouse_was_on;
+bool mouse_was_on;
 
 if (ccount < 0 || ccount > CMAX)
 	return(builtin_err = Err_parameter_range);
@@ -787,22 +794,22 @@ return(err);
 }
 
 
-static Boolean po_Qlist(Popot choice_str, Popot choice_ix, Popot items,
+static bool po_Qlist(Popot choice_str, Popot choice_ix, Popot items,
 		int icount, Popot ipos, Popot header)
 /*****************************************************************************
  *
- * Boolean Qlist(char *choicestr, int *choice,
+ * bool Qlist(char *choicestr, int *choice,
  *	 char **items, int icount, int *ipos, char *header)
  ****************************************************************************/
 {
 Names *nlist = NULL;
 Names *nsel;
 char *retbuf = NULL;
-Boolean retbuf_allocated = FALSE;
+bool retbuf_allocated = false;
 short ipo = 0;
-Boolean ret = FALSE;
+bool ret = false;
 int maxchars;
-Boolean mouse_was_on;
+bool mouse_was_on;
 
 if (choice_ix.pt == NULL)
 	{
@@ -824,7 +831,7 @@ if (choice_str.pt == NULL)
 		builtin_err = Err_no_memory;
 		goto OUT;
 		}
-	retbuf_allocated = TRUE;
+	retbuf_allocated = true;
 	}
 else
 	{
@@ -860,17 +867,17 @@ static Errcode remember_ok_btn(Names *which, void *data)
 	return Success;
 }
 
-static Boolean remember_info_btn(Names *which, void *data)
+static bool remember_info_btn(Names *which, void *data)
 {
 	lastsel = which;
 	lastbtn = 2;
-	return TRUE;
+	return true;
 }
 
 static int po_Qscroll(Popot choice_ix, Popot items,
 		int icount, Popot ipos, Popot button_texts, Popot header)
 /*****************************************************************************
- * Boolean Qscroll(int *choice, char **items, int icount, int *ipos, char *hdr)
+ * bool Qscroll(int *choice, char **items, int icount, int *ipos, char *hdr)
  ****************************************************************************/
 {
 	Names	*nlist = NULL;
@@ -881,7 +888,7 @@ static int po_Qscroll(Popot choice_ix, Popot items,
 	short	ipo = -1;
 	int 	ret;
 	int 	maxchars;
-	Boolean mouse_was_on;
+	bool mouse_was_on;
 	void	*use_info_btn;	// lazy, lazy
 
 	if (choice_ix.pt == NULL)
@@ -1105,7 +1112,7 @@ po_Qscroll,
 	"Boolean Qscroll(int *choice, char **items, int icount,"
 	" int *ipos, char **button_texts, char *header);",
 po_UdSlider,
- 	"Boolean UdQnumber(int *num, int min, int max," 
+ 	"Boolean UdQnumber(int *num, int min, int max,"
       "Errcode (*update)(void *data, int num), void *data, char *fmt,...);",
 po_edit,
 	"int Qedit(char *text_buffer, int max_size,  int *cursor_position,"

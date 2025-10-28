@@ -14,6 +14,8 @@
 #include "poly.h"
 
 extern bool po_check_abort(void* data);
+extern Errcode clone_ppoints(Poly* s, Poly* d); // from polytool.c
+
 
 static Poco_lib* poco_libs[] = {
 	&po_user_lib,  &po_draw_lib,  &po_text_lib,     &po_mode_lib, &po_turtle_lib, &po_time_lib,
@@ -195,7 +197,7 @@ Porexlib aa_pocolib = {
 	po_poe_overall,
 	&vb,
 	&vs,
-	{NULL, NULL, NULL, NULL}, /* reserved1[4] */
+	{0, 0, 0, 0}, /* reserved1[4] */
 	&po_libuser,
 	&po_liboptics,
 	&po_libswap,
@@ -213,5 +215,4 @@ Porexlib aa_pocolib = {
 	&po_libtitle,
 	&po_libtween,
 	&po_libflicplay,
-	{NULL}, /* reserved2[1] */
 };

@@ -127,10 +127,11 @@ static void po_get_resource_dir(Popot dir)
  ****************************************************************************/
 static Errcode po_set_dir(Popot dir)
 {
-	if (dir.pt == NULL) {
+	//!FIXME: this
+	// if (dir.pt == NULL) {
 		return builtin_err = Err_null_ref;
-	}
-	return change_dir(dir.pt);
+	// }
+	// return change_dir(dir.pt);
 }
 
 /*****************************************************************************

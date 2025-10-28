@@ -745,7 +745,7 @@ void qload_the_cel(void)
 	}
 }
 
-static Errcode save_the_cel(char* path)
+Errcode save_the_cel(char* path)
 {
 	Errcode err;
 	char* celpath;

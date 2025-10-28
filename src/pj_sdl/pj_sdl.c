@@ -194,12 +194,11 @@ const char* pj_sdl_preferences_path() {
 
 
 /*--------------------------------------------------------------
- * This is used all over, but the original returned a long so I'm
- * intentionally doing that conversion here.
+ * This is used all over.
  *--------------------------------------------------------------*/
-ULONG pj_clock_1000()
+long pj_clock_1000()
 {
-	return (ULONG)SDL_GetTicks();
+	return (long)SDL_GetTicks();
 }
 
 

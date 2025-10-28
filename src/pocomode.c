@@ -9,8 +9,14 @@
 #include "pocolib.h"
 #include "options.h"
 #include "util.h"
+#include "render.h"
+#include "inks.h"
+#include "brush.h"
 
 extern Errcode builtin_err;
+
+extern void set_ccycle(bool newcyc);
+
 
 /*****************************************************************************
  * ErrCode SetInk(char *name)
@@ -73,9 +79,9 @@ static int po_get_ink_strength(void)
 }
 
 /*****************************************************************************
- * void SetInkDither(Boolean dither)
+ * void SetInkDither(bool dither)
  ****************************************************************************/
-static void po_ink_dither(Boolean dither)
+static void po_ink_dither(bool dither)
 {
 	free_render_cashes();
 	vl.ink->dither = dither;
@@ -192,7 +198,7 @@ static void po_set_mask_make(bool make_it)
 }
 
 /*****************************************************************************
- * Boolean GetMaskCreate(void)
+ * bool GetMaskCreate(void)
  ****************************************************************************/
 static bool po_get_mask_make(void)
 {
@@ -292,9 +298,9 @@ static void po_set_outline_color(int color)
 }
 
 /*****************************************************************************
- * Boolean GetClosed(void)
+ * bool GetClosed(void)
  ****************************************************************************/
-static Boolean po_get_poly_closed(void)
+static bool po_get_poly_closed(void)
 {
 	return vs.closed_curve;
 }

@@ -687,7 +687,7 @@ void clip_cel1(void)
 	clip_cel();
 }
 
-static Errcode cel_from_rect(Rectangle* rect, bool render_only)
+Errcode cel_from_rect(Rectangle* rect, bool render_only)
 {
 	Errcode err;
 

@@ -11,10 +11,10 @@ extern Errcode builtin_err;
 Popot poco_lmalloc(long size);
 void po_free(Popot ppt);
 Errcode po_poly_to_arrays(Poly* p, Popot* x, Popot* y);
-Errcode po_arrays_to_poly(Poly* p, int ptcount, Popot* px, Popot* py);
 int twirl1(Celcfit* cfit, int ix, int frames, int scale);
 int a3d_get_auto_flags();
 
+extern Errcode po_arrays_to_poly(Poly* p, int ptcount, Popot* px, Popot* py); // from pocolibs.c
 
 typedef struct xyzPoint {
 	double x, y, z; /* pixel coordinates */
@@ -300,7 +300,7 @@ static Errcode opt_get_state(Popot sta)
 	OptState* state;
 	OptPos* pos;
 
-	Errcode err = Popot_bufcheck(&sta, sizeof(OptState))
+	Errcode err = Popot_bufcheck(&sta, sizeof(OptState));
 
 		if (err < Success)
 	{

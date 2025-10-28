@@ -399,7 +399,7 @@ static Errcode copy_poly_file(char *source, char *dest)
 }
 
 
-static Errcode load_path(char *name)
+Errcode load_path(char *name)
 {
 	return(copy_poly_file(name,ppoly_name));
 }
@@ -411,13 +411,13 @@ static Errcode save_path(char *name)
 }
 
 
-static Errcode load_polygon(char *name)
+Errcode load_polygon(char *name)
 {
 	return(cant_load(copy_poly_file(name,poly_name),name));
 }
 
 
-static Errcode save_polygon(char *name)
+Errcode save_polygon(char *name)
 {
 	return(pj_copyfile(poly_name, name));
 }

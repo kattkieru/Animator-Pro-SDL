@@ -6,6 +6,8 @@
 #include "pocoface.h"
 #include "pocolib.h"
 #include "flicel.h"
+#include "pentools.h"
+#include "zoom.h"
 
 extern Poco_lib po_blit_lib;
 extern Flicel *thecel;
@@ -139,7 +141,7 @@ static void po_copy_screen(Popot s, Popot d)
  ****************************************************************************/
 {
 Rcel *scel, *dcel;
-Boolean csame;
+bool csame;
 
 if ((scel = s.pt) == NULL || (dcel = d.pt) == NULL)
 	{
@@ -166,7 +168,7 @@ void po_swap_screen(Popot s, Popot d)
  ****************************************************************************/
 {
 Rcel *scel, *dcel;
-Boolean csame;
+bool csame;
 
 if ((scel = s.pt) == NULL || (dcel = d.pt) == NULL)
 	{

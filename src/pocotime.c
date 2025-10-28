@@ -7,14 +7,18 @@
 #include "pocolib.h"
 #include "auto.h"
 #include "syslib.h"
+#include "flx.h"
+#include "render.h"
 
 extern Errcode builtin_err;
 
 void next_frame();
 void prev_frame();
-void flx_seek_frame(int frame);
 void set_flx_length(int frames);
 Errcode delete_some(int x);
+
+extern Errcode insert_frames(int count, int where); // from time.c
+
 
 static void po_sleep(double seconds)
 /*****************************************************************************
@@ -158,7 +162,7 @@ static Errcode po_over_time(Popot effect, Popot data)
 		return(Err_function_not_found);
 	free_render_cashes();
 	omulti = vs.multi;
-	vs.multi = TRUE;
+	vs.multi = true;
 	err = do_autodraw(poco1,&pd);
 	vs.multi = omulti;
 	make_render_cashes();
@@ -220,7 +224,7 @@ Errcode po_poe_overtime(void *effect, void *data)
 
 	free_render_cashes();	/* no bills larger than $20 accepted after 5pm... */
 	omulti = vs.multi;
-	vs.multi = TRUE;
+	vs.multi = true;
 	err = do_autodraw(effect,data);
 	vs.multi = omulti;
 	make_render_cashes();
@@ -262,12 +266,12 @@ Errcode po_poe_overall(void *effect, void *data)
 	return po_poe_over_some(effect, data, DOAUTO_ALL);
 }
 
-static void po_set_time_mode(Boolean is_multi)
+static void po_set_time_mode(bool is_multi)
 {
 vs.multi = is_multi;
 }
 
-static Boolean po_get_time_mode(void)
+static bool po_get_time_mode(void)
 {
 return(vs.multi);
 }
@@ -315,62 +319,62 @@ static int po_get_seg_end(void)
 return(vs.stop_seg);
 }
 
-static void set_still(Boolean still)
+static void set_still(bool still)
 {
 vs.ado_tween = !still;
 }
 
-static Boolean get_still(void)
+static bool get_still(void)
 {
 return(!vs.ado_tween);
 }
 
-static void set_in_slow(Boolean in_slow)
+static void set_in_slow(bool in_slow)
 {
 vs.ado_ease = in_slow;
 }
 
-static Boolean get_in_slow(void)
+static bool get_in_slow(void)
 {
 return(vs.ado_ease);
 }
 
-static void set_out_slow(Boolean out_slow)
+static void set_out_slow(bool out_slow)
 {
 vs.ado_ease_out = out_slow;
 }
 
-static Boolean get_out_slow(void)
+static bool get_out_slow(void)
 {
 return(vs.ado_ease_out);
 }
 
-static void set_ping_pong(Boolean ping_pong)
+static void set_ping_pong(bool ping_pong)
 {
 vs.ado_pong = ping_pong;
 }
 
-static Boolean get_ping_pong(void)
+static bool get_ping_pong(void)
 {
 return(vs.ado_pong);
 }
 
-static void set_reverse(Boolean reverse)
+static void set_reverse(bool reverse)
 {
 vs.ado_reverse = reverse;
 }
 
-static Boolean get_reverse(void)
+static bool get_reverse(void)
 {
 return(vs.ado_reverse);
 }
 
-static void set_complete(Boolean complete)
+static void set_complete(bool complete)
 {
 vs.ado_complete = complete;
 }
 
-static Boolean get_complete(void)
+static bool get_complete(void)
 {
 return(vs.ado_complete);
 }

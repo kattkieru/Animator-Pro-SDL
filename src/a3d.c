@@ -29,7 +29,6 @@
 static Errcode ado_mouse_ptfunc(Pentool *pt, Wndo *w);
 static Errcode eload_a3d(char *name);
 static Errcode save_a3d(char *title);
-static Errcode do_move_along(void);
 
 /************** Stuff for 2-Dimensional point-lists *****************/
 typedef struct poly2 {
@@ -366,7 +365,7 @@ void default_center(Short_xyz *v)
 	}
 }
 
-static void a3d_default_centers(void)
+void a3d_default_centers(void)
 {
 	default_center(&vs.move3.spin_center);
 	pj_copy_structure(&vs.move3.spin_center, &vs.move3.size_center, sizeof(&vs.move3.size_center));
@@ -651,7 +650,7 @@ void xyz_zero_sl(Button *m)
    it's inverse.  Given the axis this guy figures out what
    bracketing rotations are necessary. (Boy, it's a good thing
    I know Linear Algebra.) */
-static void make_rot_op(void)
+void make_rot_op(void)
 {
 	find_conjugates(&vs.move3);
 }
@@ -814,7 +813,7 @@ void mado_view(void)
 	show_mp();
 }
 
-static int a3d_get_auto_flags(void)
+int a3d_get_auto_flags(void)
 {
 	int autoflags;
 
@@ -1668,7 +1667,7 @@ void edit_path(void)
 }
 
 /* Duplicate top of transformation stack. */
-static Errcode do_move_along(void)
+Errcode do_move_along(void)
 {
 	make_rot_op();
 
@@ -1683,7 +1682,7 @@ static Errcode do_move_along(void)
 
 /* make sure that the optics element exists.  If it doesn't set it to
  * the Flic */
-static void a3d_check_el(bool *no_poly, bool *no_tween)
+void a3d_check_el(bool *no_poly, bool *no_tween)
 {
 	bool np, nt;
 
