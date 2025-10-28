@@ -3,6 +3,7 @@
 #include "errcodes.h"
 #include "hw386.h"
 #include "jfile.h"
+#include "syslib.h" /* prototypes for pj_* when building with modern host */
 #include "rexload.h"
 
 Errcode pj_open_rex(char* path, Jfile* pfile, EXP_HDR* hdrsp)

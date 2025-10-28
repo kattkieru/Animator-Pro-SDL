@@ -181,7 +181,20 @@ static int get_menu_colors(Pixel** indicies, Rgb3** lastrgbs, Rgb3** idealrgbs)
 /*****************************************************************************
  *
  ****************************************************************************/
+Popot po_ptr2ppt(void *ptr, int bytes) {
+    Popot p = { ptr, ptr, bytes > 0 ? (char*)ptr + bytes - 1 : ptr };
+    return p;
+}
 
+
+void *po_ppt2ptr(Popot ppt) {
+    return ppt.pt;
+}
+
+
+ /*****************************************************************************
+ *
+ ****************************************************************************/
 Porexlib aa_pocolib = {
 	/* header */
 	{sizeof(Porexlib), AA_POCOLIB, AA_POCOLIB_VERSION},

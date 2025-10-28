@@ -469,7 +469,7 @@ static Errcode rado_poly(Short_xy *ado_s, int ptcount, int curved)
 }
 
 /* This is the 'auto vec' to render optics on one frame */
-static Errcode twirl1(void *celcfit, int ix, int frames, int scale, Autoarg *aa)
+Errcode twirl1(void *celcfit, int ix, int frames, int scale, Autoarg *aa)
 {
 	Celcfit *cfit = celcfit;
 	Rcel *tf = NULL;

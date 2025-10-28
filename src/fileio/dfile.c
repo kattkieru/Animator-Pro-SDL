@@ -3,30 +3,11 @@
 
 Errcode jerr = Success;
 
+extern Errcode pj_close(Jfile f); // from syslib.c
 
 Errcode pj_ioerr()
 {
 	return jerr;
-}
-
-Errcode pj_close(Jfl* f)
-{
-	/* do some error checking first... */
-	if (f == NULL) {
-		return jerr = Err_null_ref;
-	}
-	if (f->jfl_magic != JFL_MAGIC) {
-		return jerr = Err_corrupted;
-	}
-
-	//!FIXME: This
-	/*
-	if (f->handle.j) {
-		pj_dclose(f->handle.j);
-	}
-	*/
-	pj_free(f);
-	return Success;
 }
 
 static Jfl* jopen_it(char* name, int mode, Doserr (*openit)(int* phandle, char* name, int mode))
@@ -52,16 +33,3 @@ error:
 	return NULL;
 }
 
-Jfl* pj_open(char* name, int mode)
-{
-	//!FIXME: This
-	// return jopen_it(name, mode, pj_dopen);
-	return NULL;
-}
-
-Jfl* pj_create(char* name, int mode)
-{
-	//!FIXME: This
-	// return jopen_it(name, mode, pj_dcreate);
-	return NULL;
-}

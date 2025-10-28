@@ -405,7 +405,7 @@ Errcode load_path(char *name)
 }
 
 
-static Errcode save_path(char *name)
+Errcode save_path(char *name)
 {
 	return(pj_copyfile(ppoly_name,name));
 }

@@ -30,4 +30,15 @@ struct _syslib_error_check_ {
 // int strlen(char *s);				/* ANSI strlen */
 // int strcmp(char *s1,char *s2);		/* ANSI string compare */
 
+/* Modern host-side implementations of legacy PJ unbuffered file I/O */
+Jfile pj_open(char *path, int mode);
+Jfile pj_create(char *path, int mode);
+Errcode pj_close(Jfile f);
+Errcode pj_closez(Jfile *jf);
+long pj_read(Jfile f, void *buf, long size);
+long pj_write(Jfile f, void *buf, long size);
+long pj_seek(Jfile f, long offset, int mode);
+long pj_tell(Jfile f);
+Errcode pj_readoset(Jfile f, void *buf, long offset, size_t size);
+
 #endif /* SYSLIB_H */

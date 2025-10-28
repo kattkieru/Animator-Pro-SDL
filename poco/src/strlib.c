@@ -10,8 +10,6 @@
 #include "ptrmacro.h"
 #include "util.h"
 
-extern char* getenv(); /* can't use watcom stdlib.h, conflicts with pj hdrs */
-
 extern Errcode builtin_err;
 
 static Popot null_popot = { NULL, NULL, NULL };
