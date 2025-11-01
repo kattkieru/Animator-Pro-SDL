@@ -232,49 +232,51 @@ return err;
  ****************************************************************************/
 Errcode qrun_poco(char *sourcename, bool edit_err)
 {
-Errcode err;
-char	err_file[PATH_SIZE];
-char	chainbuf[PATH_SIZE];
-char	*phase;
-long	err_line;
-int 	err_char;
-void	*pev;
+	Errcode err;
+	char	err_file[PATH_SIZE];
+	char	chainbuf[PATH_SIZE];
+	char	*phase;
+	long	err_line;
+	int 	err_char;
+	void	*pev;
 
 CHAIN_ANOTHER_PROGRAM:					// loop point for chaining programs
-
 	po_chainto_program_path[0] = '\0';  // start with no chainto program
 
 	phase = "poco_compile";
-	if ((err = compile_poco(&pev, sourcename, poco_err_name,
+	err = compile_poco(&pev, sourcename, poco_err_name,
 				NULL/*"H:dump"*/, get_poco_libs(),
-				err_file, &err_line, &err_char, 
-				get_poco_include_pathlist())) >= Success)
-		{
+				err_file, &err_line, &err_char,
+				get_poco_include_pathlist());
+	if (err >= Success)
+	{
 		save_undo();
 		err_char = 0;
 		phase = "poco_run";
 		err = execute_poco(&pev,&err_line);
-		}
+	}
 
 	if (err < Success)
-		{
+	{
 		po_chainto_program_path[0] = '\0';  // don't allow chaining after error
-		if (err == Err_in_err_file)
+		if (err == Err_in_err_file) {
 			qpoco_err(poco_err_name, err_line, err_char, edit_err);
-		else
-			poco_report_err(phase, err);
-		err = Err_reported;
 		}
+		else {
+			poco_report_err(phase, err);
+		}
+		err = Err_reported;
+	}
 
 	free_poco(&pev);
 
 	if (po_chainto_program_path[0] != '\0')
-		{
+	{
 		strcpy(chainbuf, po_chainto_program_path);
 		sourcename = chainbuf;
 		set_current_program_path(chainbuf);
 		goto CHAIN_ANOTHER_PROGRAM;
-		}
+	}
 
 	return err;
 }
@@ -292,9 +294,9 @@ int err_char;
 
 set_current_program_path(name); 	/* used by compiler for #include, etc */
 
-return(compile_poco(&cl_pev, name, poco_err_name,
+return compile_poco(&cl_pev, name, poco_err_name,
 		NULL, get_poco_libs(),
-		err_file, &err_line, &err_char, get_poco_include_pathlist()));
+		err_file, &err_line, &err_char, get_poco_include_pathlist());
 }
 
 

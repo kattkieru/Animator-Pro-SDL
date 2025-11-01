@@ -172,8 +172,8 @@ static Errcode alloc_wild_list(Names** pwild_list,
 
 	for (i = 0; i < count; i++) {
 		snprintf(full_path, 1024, "%s/%s", search_folder, files[i]);
-		if (SDL_GetPathInfo(full_path, &info) != 0) {
-			fprintf(stderr, "-- Error on %s: %s\n", files[i], SDL_GetError());
+		if (!SDL_GetPathInfo(full_path, &info)) {
+			fprintf(stderr, "-- Error attempting to get path info for %s: %s\n", files[i], SDL_GetError());
 			continue;
 		}
 
@@ -240,7 +240,7 @@ bool pj_is_directory(const char *path)
 {
 	SDL_PathInfo info;
 
-	if (SDL_GetPathInfo(path, &info) != 0) {
+	if (!SDL_GetPathInfo(path, &info)) {
 		return false;
 	}
 

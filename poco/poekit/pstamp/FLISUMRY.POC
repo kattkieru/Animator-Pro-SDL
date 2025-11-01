@@ -88,7 +88,6 @@ void do_help(void)
  ****************************************************************************/
 {
 	Qtext(
-
 		"This program summarizes a flic by creating a screen full of small "
 		"'postage stamp' images from the flic's frames.  It can summarize "
 		"the flic currently in memory, placing the results in the swap "
@@ -103,8 +102,7 @@ void do_help(void)
 		"current flic frame.  Thus, you can summarize a disk flic onto a "
 		"frame with a larger resolution, and get larger postage stamps "
 		"images in the summary."
-
-		 );
+     );
 }
 
 void get_grid_choice(Boolean do_dialog)

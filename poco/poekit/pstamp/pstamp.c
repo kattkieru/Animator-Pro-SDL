@@ -79,26 +79,13 @@ int 	srcblkhi;				// integer height of a source averaging block.
 int 	deltabpr;				// distance from end of block to start of next.
 
 /*----------------------------------------------------------------------------
- * For Watcom C only, a performance tweak...
- *	The following pragma specifies passing of a pointer parm in a register
- *	for the very-often-called averaging function.  This is about the *only*
- *	way to fool the Watcom optimizer into a registerizing a pointer in the
- *	averaging function.  (Of course, it also helps to pass the parm in a
- *	reg, but that's not the main point.)
- *--------------------------------------------------------------------------*/
-
-#ifdef __WATCOMC__
-  #pragma aux average_pixel_block parm [edx];
-#endif
-
-/*----------------------------------------------------------------------------
  * code...
  *--------------------------------------------------------------------------*/
 
-static void unload_ctab(Rgb3 *ptab, int tabcount)
 /*****************************************************************************
  * unload screen's rgbrgb... cmap to our separate red, green, blue arrays.
  ****************************************************************************/
+static void unload_ctab(Rgb3 *ptab, int tabcount)
 {
 	int i;
 	for (i = 0; i < tabcount; ++i) {
@@ -109,10 +96,10 @@ static void unload_ctab(Rgb3 *ptab, int tabcount)
 	}
 }
 
-static void draw_box(Rcel *drast, Pixel color, int x, int y, int w, int h)
 /*****************************************************************************
  * draw a hollow box.
  ****************************************************************************/
+static void draw_box(Rcel *drast, Pixel color, int x, int y, int w, int h)
 {
 	pj_set_hline(drast, color, x,	  y,	 w);
 	pj_set_hline(drast, color, x,	  y+h-1, w);
@@ -120,7 +107,6 @@ static void draw_box(Rcel *drast, Pixel color, int x, int y, int w, int h)
 	pj_set_vline(drast, color, x+w-1, y,	 h);
 }
 
-static unsigned int average_pixel_block(Pixel *inbuf)
 /*****************************************************************************
  * average the rgb values in an arbitrary source block to a single rgb value
  * which is mapped into a 6-cube color space.
@@ -130,6 +116,7 @@ static unsigned int average_pixel_block(Pixel *inbuf)
  * things like a single-pixel-wide line to show up in the postage stamp
  * image; straight averaging would make the line disappear.
  ****************************************************************************/
+static unsigned int average_pixel_block(Pixel *inbuf)
 {
 	int  w;
 	int  h;
@@ -174,12 +161,12 @@ static unsigned int average_pixel_block(Pixel *inbuf)
 	}
 }
 
-static void build_output_image(Rcel *vrast, Pixel *srastbuf,
-							  int swidth, int sheight, int bpr,
-							  double srcblkw, double srcblkh)
 /*****************************************************************************
  * process the full-sized input image down to a postage stamp.
  ****************************************************************************/
+static void build_output_image(Rcel *vrast, Pixel *srastbuf,
+							  int swidth, int sheight, int bpr,
+							  double srcblkw, double srcblkh)
 {
 	double srcx;					/* source x */
 	double srcy;					/* source y */
@@ -232,13 +219,14 @@ static void build_output_image(Rcel *vrast, Pixel *srastbuf,
 	}
 }
 
+
+/*****************************************************************************
+ * convert a screen to postage stamp image rendered onto another screen.
+ ****************************************************************************/
 Errcode make_pstamp(Popot sscreen, Popot dscreen,
 					int dxstart, int dystart,
 					int dwidth, int dheight,
 					Boolean draw_border)
-/*****************************************************************************
- * convert a screen to postage stamp image rendered onto another screen.
- ****************************************************************************/
 {
 	Rcel   *vrast;			 /* virtual destination raster */
 	Rcel   workcel; 		 /* work raster for creating a virtual raster */
@@ -292,16 +280,19 @@ Errcode make_pstamp(Popot sscreen, Popot dscreen,
 		swidth	= srast->width;
 		sheight = srast->height;
 
-		if (srast->cmap->num_colors > Array_els(rtab))
+		if (srast->cmap->num_colors > Array_els(rtab)) {
 			return builtin_err = Err_too_big;
-		else
+		}
+		else {
 			unload_ctab(srast->cmap->ctab, srast->cmap->num_colors);
+		}
 
 		if (srast->type == RT_BYTEMAP) {
 			srastbuf = srast->hw.bm.bp[0];
 			bpr 	= srast->hw.bm.bpr;
 		} else {
-			if (NULL == (allocbuf = malloc(srast->width * srast->height))) {
+			allocbuf = malloc(srast->width * srast->height);
+			if (allocbuf == NULL) {
 				builtin_err = Err_no_memory;
 				goto ERROR_EXIT;
 			}
@@ -373,19 +364,18 @@ Errcode make_pstamp(Popot sscreen, Popot dscreen,
 	 * logic above a little cleaner.
 	 *----------------------------------------------------------------------*/
 
-	if (draw_border)
+	if (draw_border) {
 		draw_box((Rcel *)dscreen.pt, BORDER_COLOR_IDX, dxstart, dystart, dwidth, dheight);
+	}
 
 ERROR_EXIT:
-
-	if (allocbuf != NULL)
+	if (allocbuf != NULL) {
 		free(allocbuf);
+	}
 
 	return builtin_err;
 }
 
-int pstamp_difference(Popot screen1, int srcx, int srcy,
-					  Popot screen2, int dx, int vy, int dw, int dh)
 /*****************************************************************************
  * some day, this will return the weighted difference between a pair of
  * postage stamps.	a poco program that is, say, summarizing a flic into a
@@ -395,17 +385,20 @@ int pstamp_difference(Popot screen1, int srcx, int srcy,
  *
  * interesting idea, sounds real slow; maybe it'll get done someday.
  ****************************************************************************/
+int pstamp_difference(Popot screen1, int srcx, int srcy,
+					  Popot screen2, int dx, int vy, int dw, int dh)
 {
 	return 1;
 }
 
-void init_pstamp_screen(Popot screen)
+
 /*****************************************************************************
  * initialize the screen/raster upon which the postage stamps will be drawn.
  *
  * primarily, this consists of clearing the screen, and loading the screen's
  * palette with a standard 6-cube color map.
  ****************************************************************************/
+void init_pstamp_screen(Popot screen)
 {
 	Rgb3 *ptab;
 	Rcel *rast;
@@ -433,24 +426,26 @@ void init_pstamp_screen(Popot screen)
 	pj_cmap_load(rast, rast->cmap);
 	pj_set_rast(rast, 0);
 
-	if (rast == GetPicScreen())
+	if (rast == GetPicScreen()) {
 		poePicDirtied();
+	}
 }
 
-void cleanup_pstamp_screen(Popot screen)
+
 /*****************************************************************************
  * if the screen the pstamps were being drawn onto is the main picscreen,
  * signal to PJ that it has been dirtied so that it will get recompressed.
  ****************************************************************************/
+void cleanup_pstamp_screen(Popot screen)
 {
 	if (screen.pt == GetPicScreen())
 		poePicDirtied();
 }
 
+
 /*----------------------------------------------------------------------------
  * Setup rexlib/pocorex interface structures...
  *--------------------------------------------------------------------------*/
-
 static Lib_proto calls[] = {
 	{ init_pstamp_screen,	"void    InitPstampScreen(Screen *s);"},
 
