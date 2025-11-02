@@ -74,6 +74,7 @@
 #include "errcodes.h"
 #include "poco.h"
 #include <setjmp.h>
+#include <stdio.h>
 #include <string.h>
 
 /*****************************************************************************
@@ -373,9 +374,16 @@ Poco_lib* po_open_library(Poco_cb* pcb, char* libname, char* id_string)
 		return pcb->builtin_lib;
 	}
 	else {
-		if ((err = pj_load_pocorex(&ll, libname, id_string)) < Success) {
+		fprintf(stderr, "[poco library] #pragma poco library '%s' encountered\n", libname);
+		{
+			const char* script_path = NULL;
+			if (pcb && pcb->t.file_stack && pcb->t.file_stack->name) {
+				script_path = pcb->t.file_stack->name;
+			}
+			if ((err = pj_load_pocorex(&ll, script_path, libname, id_string)) < Success) {
 			errline(err, "can't load poco lib.");
 			return (NULL);
+			}
 		}
 		ll->next = pcb->run.loaded_libs;
 		pcb->run.loaded_libs = ll;

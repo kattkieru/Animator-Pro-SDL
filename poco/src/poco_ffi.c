@@ -736,11 +736,22 @@ Pt_num po_ffi_call(const Po_FFI* binding, const Pt_num* stack_in, const ffi_type
 	exec_binding.arg_types[exec_binding.arg_count] = NULL;
 
 
-	ffi_status status = ffi_prep_cif_var(
-		&exec_binding.interface, FFI_DEFAULT_ABI,
-		original_arg_count - is_variadic,  // note that we are comparing the base arg count
-		exec_binding.arg_count,            // vs the total arguments passed in
-		exec_binding.result_type, exec_binding.arg_types);
+	ffi_status status;
+	if (is_variadic) {
+		/* original_arg_count includes two sentinel parameters inserted for variadics;
+		 * libffi requires at least one fixed argument when using ffi_prep_cif_var. */
+		status = ffi_prep_cif_var(
+			&exec_binding.interface, FFI_DEFAULT_ABI,
+			original_arg_count - is_variadic,
+			exec_binding.arg_count,
+			exec_binding.result_type, exec_binding.arg_types);
+	}
+	else {
+		status = ffi_prep_cif(
+			&exec_binding.interface, FFI_DEFAULT_ABI,
+			exec_binding.arg_count,
+			exec_binding.result_type, exec_binding.arg_types);
+	}
 
 	if (status != FFI_OK) {
 		fprintf(stderr, "po_ffi_call: '%s' couldn't prep variadic CIF-- %s.\n", exec_binding.name,

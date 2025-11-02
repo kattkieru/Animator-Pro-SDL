@@ -146,18 +146,7 @@ void pj_freez(void* p)
 	*(void**)p = NULL;
 }
 
-Errcode pj_load_pocorex(Poco_lib** lib, char* name, char* idstring)
-{
-	(void)lib;
-	(void)name;
-	(void)idstring;
-	return (Err_unimpl); /* Would drag in too much of PJ to really do this */
-}
-
-void pj_free_pocorexes(Poco_lib** libs)
-{
-	(void)libs;
-}
+/* real implementations are provided in libpoco (pocoload.c) */
 
 /*****************************************************************************
  * this routine catches div-by-zero and overflows in fp math instructions.

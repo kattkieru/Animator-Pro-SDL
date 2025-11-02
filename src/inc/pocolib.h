@@ -74,7 +74,9 @@ typedef struct poco_lib /* Poco library main control structure */
 	void (*cleanup)(struct poco_lib* lib);
 	void* local_data;
 	Dlheader resources;
-	void* rexhead;
+	void* rexhead;		/* For loaded POE modules: points to internal structure containing
+				 * the library handle and Pocorex* pointer. Used for cleanup
+				 * when unloading the library. Set to NULL for builtin libraries. */
 	char reserved[12];
 } Poco_lib;
 
@@ -124,7 +126,7 @@ extern void poco_freez(Popot* pt);
 extern char* po_fuf_name(void* fuf);
 extern void* po_fuf_code(void* fuf);
 extern Rnode* po_in_rlist(Dlheader* sfi, void* f);
-extern Errcode pj_load_pocorex(Poco_lib** lib, char* name, char* id_str);
+extern Errcode pj_load_pocorex(Poco_lib** lib, const char* script_path, char* name, char* id_str);
 extern void pj_free_pocorexes(Poco_lib** libs);
 extern int po_findpoe(char* libname, Lib_proto** plibreturn);
 extern Errcode po_poe_overtime(void* effect, void* data);

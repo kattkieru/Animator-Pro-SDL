@@ -25,6 +25,7 @@ set(LIBPOCO_SRC_FILES
 		pocodis.c
 		pocoface.c
 		pocolib.c
+		pocoload.c
 		pocoop.c
 		pocotype.c
 		postring.c
@@ -76,6 +77,9 @@ add_executable(poco ${POCO_MAIN_SRC_FILES})
 target_link_libraries(poco libpoco trdfile trdutil ffi_static hashmap)
 INSTALL(TARGETS poco DESTINATION ./)
 
+
+# Add poekit subdirectory (for POE modules)
+add_subdirectory(poekit)
 
 # Add test subdirectory
 add_subdirectory(test)

@@ -126,6 +126,20 @@ add_poco_neg_test(voidret "neg/NVOIDRET.POC")
 add_poco_test(hi "HI.POC")
 add_poco_test(array "ARRAY.POC")
 add_poco_test(ffi_01 "po_ffi_01.poc")
+
+# Test for hello library loading via #pragma poco library
+# This test verifies that #pragma poco library can load and use POE modules
+add_test(
+    NAME "poco_hello_library"
+    COMMAND $<TARGET_FILE:poco> "${CMAKE_CURRENT_SOURCE_DIR}/hello_test.poc"
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+)
+set_tests_properties("poco_hello_library" PROPERTIES
+    PASS_REGULAR_EXPRESSION "Hello from POE!|Test completed successfully"
+    TIMEOUT 10
+    DEPENDS hello
+)
+
 # Add more general tests as needed:
 # add_poco_test(atof "ATOF.POC")
 # add_poco_test(comma "COMMA.POC")

@@ -208,6 +208,18 @@
 /* end POCOERR */
 #endif
 
+/* poco library loading errors */
+#define POCOLIBERR -425
+#ifdef POCOLIBERR
+#define Err_poco_lib_not_found (POCOLIBERR-0) /* Library file not found in search paths - searched in script directory, current working directory, and executable directory */
+#define Err_poco_lib_load_failed (POCOLIBERR-1) /* Failed to load shared library - dlopen()/LoadLibrary() failed, check poco_dlerror() for details */
+#define Err_poco_lib_no_entry (POCOLIBERR-2) /* Library loaded but entry point poco_rexlib_get not found - library may be missing symbol export */
+#define Err_poco_lib_invalid (POCOLIBERR-3) /* Entry point returned NULL or invalid structure - library entry point function returned NULL pointer */
+#define Err_poco_lib_version (POCOLIBERR-4) /* Library version mismatch - exe->hdr.version does not match POCOREX_VERSION */
+#define Err_poco_lib_empty (POCOLIBERR-5) /* Library has no functions - lib.lib == NULL or lib.count == 0 */
+/* end POCOLIBERR */
+#endif
+
 #ifndef REXLIB_CODE
 
 #define FLIERR -500

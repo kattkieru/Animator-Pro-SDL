@@ -1,23 +1,26 @@
 
 #include "errcodes.h"
 #include "filepath.h"
-#include "resource.h"
 #include "pocorex.h"
 #include "pocolib.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #ifdef _WIN32
 #include <windows.h>
 #else
 #include <dlfcn.h>
 #include <limits.h>
-#include <unistd.h>
 #ifdef __APPLE__
 #include <mach-o/dyld.h>
 #endif
+#endif
+
+#ifndef POCO_H
+#include "poco.h"
 #endif
 
 #ifdef _WIN32
@@ -48,6 +51,18 @@ static int poco_dlclose(void* handle)
 	}
 	return 0;
 }
+
+static const char* poco_dlerror(void)
+{
+	static char buf[256];
+	DWORD err = GetLastError();
+	if (err == 0) {
+		return NULL;
+	}
+	snprintf(buf, sizeof(buf), "Windows error %lu", err);
+	return buf;
+}
+
 #else
 
 static void* poco_dlopen(const char* filename, int flag)
@@ -65,12 +80,12 @@ static int poco_dlclose(void* handle)
 	return dlclose(handle);
 }
 
-#endif
+static const char* poco_dlerror(void)
+{
+	return dlerror();
+}
 
-typedef struct {
-	void* handle;
-	Pocorex* exe;
-} Poco_lib_loaded;
+#endif
 
 static const char* get_platform_extension(void)
 {
@@ -121,6 +136,7 @@ static char* try_load_path(const char* base_dir, const char* libname, char* out_
 	
 	if (has_extension) {
 		snprintf(out_path, PATH_SIZE, "%s%s", base_dir, libname);
+		fprintf(stderr, "[poco library search] trying '%s'\n", out_path);
 		FILE* test_file = fopen(out_path, "r");
 		if (test_file != NULL) {
 			fclose(test_file);
@@ -131,6 +147,7 @@ static char* try_load_path(const char* base_dir, const char* libname, char* out_
 	
 	while ((ext_ptr = extensions[ext_idx++]) != NULL) {
 		snprintf(out_path, PATH_SIZE, "%s%s%s", base_dir, libname, ext_ptr);
+		fprintf(stderr, "[poco library search] trying '%s'\n", out_path);
 		
 		FILE* test_file = fopen(out_path, "r");
 		if (test_file != NULL) {
@@ -142,18 +159,27 @@ static char* try_load_path(const char* base_dir, const char* libname, char* out_
 	return NULL;
 }
 
-static char* find_library_file(const char* libname)
+char* poco_find_library_file(const char* script_path, const char* libname)
 {
 	static char result_path[PATH_SIZE];
 	char test_path[PATH_SIZE];
 	char dir_path[PATH_SIZE];
-	char resource_path[PATH_SIZE];
 	
 	if (libname == NULL || strlen(libname) == 0) {
 		return NULL;
 	}
 	
 	result_path[0] = '\0';
+	fprintf(stderr, "[poco library] #pragma poco library search for '%s'\n", libname);
+	
+	if (script_path != NULL) {
+		get_directory_from_path(script_path, dir_path, sizeof(dir_path));
+		if (strlen(dir_path) > 0 && try_load_path(dir_path, libname, test_path) != NULL) {
+			strncpy(result_path, test_path, PATH_SIZE - 1);
+			result_path[PATH_SIZE - 1] = '\0';
+			return result_path;
+		}
+	}
 	
 	if (getcwd(dir_path, sizeof(dir_path)) != NULL) {
 		size_t len = strlen(dir_path);
@@ -164,31 +190,6 @@ static char* find_library_file(const char* libname)
 			strncpy(result_path, test_path, PATH_SIZE - 1);
 			result_path[PATH_SIZE - 1] = '\0';
 			return result_path;
-		}
-	}
-	
-	if (make_resource_name(libname, resource_path) != NULL) {
-		const char* existing_ext = strrchr(resource_path, '.');
-		if (existing_ext != NULL) {
-			if (try_load_path("", resource_path, test_path) != NULL) {
-				strncpy(result_path, test_path, PATH_SIZE - 1);
-				result_path[PATH_SIZE - 1] = '\0';
-				return result_path;
-			}
-		}
-		const char* extensions[] = {".poe", get_platform_extension(), NULL};
-		const char* ext_ptr;
-		int ext_idx = 0;
-		while ((ext_ptr = extensions[ext_idx++]) != NULL) {
-			char full_path[PATH_SIZE];
-			snprintf(full_path, PATH_SIZE, "%s%s", resource_path, ext_ptr);
-			FILE* test_file = fopen(full_path, "r");
-			if (test_file != NULL) {
-				fclose(test_file);
-				strncpy(result_path, full_path, PATH_SIZE - 1);
-				result_path[PATH_SIZE - 1] = '\0';
-				return result_path;
-			}
 		}
 	}
 	
@@ -229,13 +230,16 @@ static char* find_library_file(const char* libname)
 #endif
 #endif
 	
+	fprintf(stderr, "[poco library search] not found for '%s'\n", libname);
 	return NULL;
 }
 
+typedef struct {
+	void* handle;
+	Pocorex* exe;
+} Poco_lib_loaded;
+
 Errcode pj_load_pocorex(Poco_lib **lib, const char* script_path, char *name, char *id_string)
-/*****************************************************************************
- *
- ****************************************************************************/
 {
 	Errcode err = Success;
 	char* lib_path = NULL;
@@ -248,59 +252,12 @@ Errcode pj_load_pocorex(Poco_lib **lib, const char* script_path, char *name, cha
 		return Err_null_ref;
 	}
 	
-	/* Use local resolver that tries known locations; prefer script directory first */
-	{
-		char dir_path[PATH_MAX];
-		char test_path[PATH_MAX];
-		const char* candidate = NULL;
-		if (script_path != NULL) {
-			get_directory_from_path(script_path, dir_path, sizeof(dir_path));
-			candidate = try_load_path(dir_path, name, test_path);
-		}
-		if (candidate == NULL) {
-			if (getcwd(dir_path, sizeof(dir_path)) != NULL) {
-				size_t len = strlen(dir_path);
-				if (len > 0 && dir_path[len - 1] != '/' && dir_path[len - 1] != '\\') {
-					strcat(dir_path, "/");
-				}
-				candidate = try_load_path(dir_path, name, test_path);
-			}
-		}
-#ifdef _WIN32
-		if (candidate == NULL) {
-			char exe_path[PATH_MAX];
-			DWORD elen = GetModuleFileNameA(NULL, exe_path, sizeof(exe_path));
-			if (elen > 0) {
-				get_directory_from_path(exe_path, dir_path, sizeof(dir_path));
-				candidate = try_load_path(dir_path, name, test_path);
-			}
-		}
-#else
-		if (candidate == NULL) {
-			char exe_path[PATH_MAX];
-			ssize_t elen = readlink("/proc/self/exe", exe_path, sizeof(exe_path) - 1);
-			if (elen > 0) {
-				exe_path[elen] = '\0';
-				get_directory_from_path(exe_path, dir_path, sizeof(dir_path));
-				candidate = try_load_path(dir_path, name, test_path);
-			}
-		}
-#ifdef __APPLE__
-		if (candidate == NULL) {
-			char bundle_path[PATH_MAX * 2];
-			uint32_t bundle_size = sizeof(bundle_path);
-			if (_NSGetExecutablePath(bundle_path, &bundle_size) == 0) {
-				get_directory_from_path(bundle_path, dir_path, sizeof(dir_path));
-				candidate = try_load_path(dir_path, name, test_path);
-			}
-		}
-#endif
-#endif
-		lib_path = (char*)candidate;
-	}
+	lib_path = poco_find_library_file(script_path, name);
 	if (lib_path == NULL) {
 		return Err_poco_lib_not_found;
 	}
+	
+	fprintf(stderr, "[poco library] Loading library '%s' -> resolved to '%s'\n", name, lib_path);
 	
 #ifdef _WIN32
 	handle = poco_dlopen(lib_path, 0);
@@ -308,6 +265,7 @@ Errcode pj_load_pocorex(Poco_lib **lib, const char* script_path, char *name, cha
 	handle = poco_dlopen(lib_path, RTLD_LAZY);
 #endif
 	if (handle == NULL) {
+		const char* err_msg = poco_dlerror();
 		return Err_poco_lib_load_failed;
 	}
 	
@@ -374,9 +332,6 @@ error:
 }
 
 void pj_free_pocorexes(Poco_lib **libs)
-/*****************************************************************************
- * Free a singly linked list of loaded poco REX libraries.
- ****************************************************************************/
 {
 	Poco_lib *lib, *next;
 	Poco_lib_loaded* loaded;
@@ -405,3 +360,6 @@ void pj_free_pocorexes(Poco_lib **libs)
 	}
 	*libs = NULL;
 }
+
+
+
