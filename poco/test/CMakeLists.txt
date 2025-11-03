@@ -118,6 +118,19 @@ add_poco_neg_test(type02 "neg/NTYPE02.POC")
 add_poco_neg_test(varfunc "neg/NVARFUNC.POC")
 add_poco_neg_test(voidret "neg/NVOIDRET.POC")
 
+# Library loading error tests
+add_poco_neg_test(lib01_not_found "neg/nlib01.poc")
+add_poco_neg_test(lib02_no_entry "neg/nlib02.poc")
+add_poco_neg_test(lib03_null_ret "neg/nlib03.poc")
+add_poco_neg_test(lib04_bad_ver "neg/nlib04.poc")
+add_poco_neg_test(lib05_empty "neg/nlib05.poc")
+
+# Set dependencies and expected error patterns for library loading tests
+set_tests_properties("poco_neg_lib02_no_entry" PROPERTIES DEPENDS test_noentry)
+set_tests_properties("poco_neg_lib03_null_ret" PROPERTIES DEPENDS test_nullret)
+set_tests_properties("poco_neg_lib04_bad_ver" PROPERTIES DEPENDS test_badver)
+set_tests_properties("poco_neg_lib05_empty" PROPERTIES DEPENDS test_empty)
+
 
 ###############################################################################
 # General Tests - Various poco scripts in the root test directory

@@ -49,7 +49,14 @@ typedef enum Errcode {
 	Err_poco_ffi_no_protos = -1202,
 	Err_poco_ffi_no_func_map = -1203,
 	Err_poco_ffi_no_map_insert = -1204,
-	Err_poco_ffi_variadic_overflow = -1205
+	Err_poco_ffi_variadic_overflow = -1205,
+	/* poco library loading errors */
+	Err_poco_lib_not_found = -1300,
+	Err_poco_lib_load_failed = -1301,
+	Err_poco_lib_no_entry = -1302,
+	Err_poco_lib_invalid = -1303,
+	Err_poco_lib_version = -1304,
+	Err_poco_lib_empty = -1305
 } Errcode;
 
 #define ERRTEXT_SIZE 256

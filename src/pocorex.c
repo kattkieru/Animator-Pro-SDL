@@ -299,6 +299,8 @@ Errcode pj_load_pocorex(Poco_lib **lib, const char* script_path, char *name, cha
 		lib_path = (char*)candidate;
 	}
 	if (lib_path == NULL) {
+		fprintf(stderr, "Error: Poco library '%s' not found in search paths\n", name);
+		fprintf(stderr, "  Searched: current working directory, resource directory, and executable directory\n");
 		return Err_poco_lib_not_found;
 	}
 	
@@ -308,27 +310,47 @@ Errcode pj_load_pocorex(Poco_lib **lib, const char* script_path, char *name, cha
 	handle = poco_dlopen(lib_path, RTLD_LAZY);
 #endif
 	if (handle == NULL) {
+#ifdef _WIN32
+		DWORD err_code = GetLastError();
+		fprintf(stderr, "Error: Failed to load poco library '%s' from '%s'\n", name, lib_path);
+		fprintf(stderr, "  Windows error code: %lu\n", err_code);
+#else
+		const char* err_msg = dlerror();
+		fprintf(stderr, "Error: Failed to load poco library '%s' from '%s'\n", name, lib_path);
+		if (err_msg != NULL) {
+			fprintf(stderr, "  System error: %s\n", err_msg);
+		}
+#endif
 		return Err_poco_lib_load_failed;
 	}
 	
 	get_func = (Poco_rexlib_get_func)poco_dlsym(handle, "poco_rexlib_get");
 	if (get_func == NULL) {
+		fprintf(stderr, "Error: Poco library '%s' is missing entry point 'poco_rexlib_get'\n", name);
+		fprintf(stderr, "  Make sure the library exports this symbol\n");
 		err = Err_poco_lib_no_entry;
 		goto error;
 	}
 	
 	exe = get_func();
 	if (exe == NULL) {
+		fprintf(stderr, "Error: Poco library '%s' entry point returned NULL\n", name);
+		fprintf(stderr, "  Library structure is invalid\n");
 		err = Err_poco_lib_invalid;
 		goto error;
 	}
 	
 	if (exe->hdr.version != POCOREX_VERSION) {
+		fprintf(stderr, "Error: Poco library '%s' version mismatch\n", name);
+		fprintf(stderr, "  Expected version: %d, Library version: %d\n", POCOREX_VERSION, exe->hdr.version);
 		err = Err_poco_lib_version;
 		goto error;
 	}
 	
 	if (exe->lib.lib == NULL || exe->lib.count == 0) {
+		fprintf(stderr, "Error: Poco library '%s' contains no functions\n", name);
+		fprintf(stderr, "  Library count: %d, Library pointer: %s\n", 
+		        exe->lib.count, exe->lib.lib == NULL ? "NULL" : "valid");
 		err = Err_poco_lib_empty;
 		goto error;
 	}

@@ -234,7 +234,7 @@ Errcode errline(int err, char* fmt, ...)
 	va_start(argptr, fmt);
 	vfprintf(stdout, fmt, argptr);
 	va_end(argptr);
-	fprintf(stdout, "\nerr code %d", err);
+	fprintf(stdout, "\nerr code %d\n", err);
 }
 
 /****************************************************************************
@@ -290,12 +290,30 @@ size_t get_errtext(Errcode err, char* buf)
 			case Err_fread_buf:
 				strcpy(buf, "Trying to fread past end of buffer");
 				break;
-			case Err_fwrite_buf:
-				strcpy(buf, "Trying to fwrite past end of buffer");
-				break;
-			default:
-				sprintf(buf, "Error code %d\n", err);
-				break;
+		case Err_fwrite_buf:
+			strcpy(buf, "Trying to fwrite past end of buffer");
+			break;
+		case Err_poco_lib_not_found:
+			strcpy(buf, "Poco library file not found");
+			break;
+		case Err_poco_lib_load_failed:
+			strcpy(buf, "Failed to load poco library");
+			break;
+		case Err_poco_lib_no_entry:
+			strcpy(buf, "Poco library missing entry point poco_rexlib_get");
+			break;
+		case Err_poco_lib_invalid:
+			strcpy(buf, "Poco library returned invalid structure");
+			break;
+		case Err_poco_lib_version:
+			strcpy(buf, "Poco library version mismatch");
+			break;
+		case Err_poco_lib_empty:
+			strcpy(buf, "Poco library contains no functions");
+			break;
+		default:
+			sprintf(buf, "Error code %d\n", err);
+			break;
 		}
 	}
 	return strlen(buf);
