@@ -66,21 +66,45 @@ typedef Pocorex* (*Poco_rexlib_get_func)(void);
  * 3. Set up the Pocorex structure using Setup_Pocorex macro:
  *    Setup_Pocorex(init_func, cleanup_func, "My Library Name", lib_calls);
  * 
- * 4. Export the entry point function:
- *    Pocorex* poco_rexlib_get(void) {
- *        return &rexlib_header;
- *    }
- * 
- * 5. Build as a shared library:
+ * 4. Build as a shared library:
  *    - Linux: .so extension
  *    - macOS: .dylib extension
  *    - Windows: .dll extension
  *    - Or use .poe extension for cross-platform compatibility
- * 
- * 6. Export the poco_rexlib_get symbol:
- *    - Linux/macOS: -fvisibility=default or __attribute__((visibility("default")))
- *    - Windows: __declspec(dllexport)
  ****************************************************************************/
+
+/*****************************************************************************
+ * Library loading utilities
+ ****************************************************************************/
+
+/**
+ * Find a Poco library file by searching standard locations.
+ * 
+ * @param script_path Path to the script requesting the library (can be NULL)
+ * @param libname Name of the library to find
+ * @param verbose Whether to print search paths
+ * @return Path to library file, or NULL if not found
+ */
+char* poco_find_library_file(const char* script_path, const char* libname, bool verbose);
+
+/**
+ * Format and output a library loading error message.
+ * 
+ * This utility function provides consistent error messaging for library
+ * loading failures across the codebase.
+ * 
+ * @param err Error code
+ * @param libname Name of the library
+ * @param lib_path Optional: resolved path to library file (can be NULL)
+ * @param sys_error Optional: system error message from dlerror/GetLastError (can be NULL)
+ * @param expected_version Optional: expected version number (0 if not applicable)
+ * @param actual_version Optional: actual version number (0 if not applicable)
+ * @param count Optional: function count for empty library error (-1 if not applicable)
+ * @param verbose Whether verbose mode is enabled (affects some messages)
+ */
+void format_poco_lib_error(Errcode err, const char* libname, const char* lib_path,
+                           const char* sys_error, int expected_version, 
+                           int actual_version, int count, bool verbose);
 
 #endif /* POCOLoad_H */
 

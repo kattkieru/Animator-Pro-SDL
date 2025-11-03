@@ -375,7 +375,7 @@ Poco_lib* po_open_library(Poco_cb* pcb, char* libname, char* id_string)
 	}
 	else {
 		if (pcb->t.verbose) {
-			fprintf(stderr, "[poco library] #pragma poco library '%s' encountered\n", libname);
+		fprintf(stderr, "[poco library] #pragma poco library '%s' encountered\n", libname);
 		}
 		{
 			const char* script_path = NULL;

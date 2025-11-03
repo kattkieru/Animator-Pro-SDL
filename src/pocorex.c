@@ -67,6 +67,70 @@ static int poco_dlclose(void* handle)
 
 #endif
 
+/*****************************************************************************
+ * Format and output a library loading error message.
+ * 
+ * This utility function provides consistent error messaging for library
+ * loading failures across the codebase.
+ ****************************************************************************/
+void format_poco_lib_error(Errcode err, const char* libname, const char* lib_path,
+                           const char* sys_error, int expected_version, 
+                           int actual_version, int count, bool verbose)
+{
+	switch (err) {
+		case Err_poco_lib_not_found:
+			fprintf(stderr, "Error: Poco library '%s' not found in search paths\n", libname);
+			fprintf(stderr, "  Searched: current working directory, resource directory, and executable directory\n");
+			break;
+			
+		case Err_poco_lib_load_failed:
+			fprintf(stderr, "Error: Failed to load poco library '%s'", libname);
+			if (lib_path != NULL) {
+				fprintf(stderr, " from '%s'", lib_path);
+			}
+			fprintf(stderr, "\n");
+			if (sys_error != NULL) {
+#ifdef _WIN32
+				fprintf(stderr, "  Windows error code: %s\n", sys_error);
+#else
+				fprintf(stderr, "  System error: %s\n", sys_error);
+#endif
+			}
+			break;
+			
+		case Err_poco_lib_no_entry:
+			fprintf(stderr, "Error: Poco library '%s' is missing entry point 'poco_rexlib_get'\n", libname);
+			fprintf(stderr, "  Make sure the library exports this symbol\n");
+			break;
+			
+		case Err_poco_lib_invalid:
+			fprintf(stderr, "Error: Poco library '%s' entry point returned NULL\n", libname);
+			fprintf(stderr, "  Library structure is invalid\n");
+			break;
+			
+		case Err_poco_lib_version:
+			fprintf(stderr, "Error: Poco library '%s' version mismatch\n", libname);
+			if (expected_version > 0 && actual_version > 0) {
+				fprintf(stderr, "  Expected version: %d, Library version: %d\n", 
+				        expected_version, actual_version);
+			}
+			break;
+			
+		case Err_poco_lib_empty:
+			fprintf(stderr, "Error: Poco library '%s' contains no functions\n", libname);
+			if (count >= 0) {
+				fprintf(stderr, "  Library count: %d, Library pointer: %s\n", 
+				        count, (count == 0) ? "NULL or empty" : "valid");
+			}
+			break;
+			
+		default:
+			fprintf(stderr, "Error: Unknown library loading error for '%s' (code %d)\n", 
+			        libname, err);
+			break;
+	}
+}
+
 typedef struct {
 	void* handle;
 	Pocorex* exe;
@@ -243,6 +307,7 @@ Errcode pj_load_pocorex(Poco_lib **lib, const char* script_path, char *name, cha
 	Poco_rexlib_get_func get_func = NULL;
 	Pocorex* exe = NULL;
 	Poco_lib_loaded* loaded = NULL;
+	bool init_called = false;  /* Track whether init() was successfully called */
 	
 	if (lib == NULL || name == NULL) {
 		return Err_null_ref;
@@ -299,8 +364,7 @@ Errcode pj_load_pocorex(Poco_lib **lib, const char* script_path, char *name, cha
 		lib_path = (char*)candidate;
 	}
 	if (lib_path == NULL) {
-		fprintf(stderr, "Error: Poco library '%s' not found in search paths\n", name);
-		fprintf(stderr, "  Searched: current working directory, resource directory, and executable directory\n");
+		format_poco_lib_error(Err_poco_lib_not_found, name, NULL, NULL, 0, 0, -1, verbose);
 		return Err_poco_lib_not_found;
 	}
 	
@@ -312,45 +376,40 @@ Errcode pj_load_pocorex(Poco_lib **lib, const char* script_path, char *name, cha
 	if (handle == NULL) {
 #ifdef _WIN32
 		DWORD err_code = GetLastError();
-		fprintf(stderr, "Error: Failed to load poco library '%s' from '%s'\n", name, lib_path);
-		fprintf(stderr, "  Windows error code: %lu\n", err_code);
+		char err_buf[32];
+		snprintf(err_buf, sizeof(err_buf), "%lu", err_code);
+		format_poco_lib_error(Err_poco_lib_load_failed, name, lib_path, err_buf, 0, 0, -1, verbose);
 #else
 		const char* err_msg = dlerror();
-		fprintf(stderr, "Error: Failed to load poco library '%s' from '%s'\n", name, lib_path);
-		if (err_msg != NULL) {
-			fprintf(stderr, "  System error: %s\n", err_msg);
-		}
+		format_poco_lib_error(Err_poco_lib_load_failed, name, lib_path, err_msg, 0, 0, -1, verbose);
 #endif
 		return Err_poco_lib_load_failed;
 	}
 	
 	get_func = (Poco_rexlib_get_func)poco_dlsym(handle, "poco_rexlib_get");
 	if (get_func == NULL) {
-		fprintf(stderr, "Error: Poco library '%s' is missing entry point 'poco_rexlib_get'\n", name);
-		fprintf(stderr, "  Make sure the library exports this symbol\n");
+		format_poco_lib_error(Err_poco_lib_no_entry, name, lib_path, NULL, 0, 0, -1, verbose);
 		err = Err_poco_lib_no_entry;
 		goto error;
 	}
 	
 	exe = get_func();
 	if (exe == NULL) {
-		fprintf(stderr, "Error: Poco library '%s' entry point returned NULL\n", name);
-		fprintf(stderr, "  Library structure is invalid\n");
+		format_poco_lib_error(Err_poco_lib_invalid, name, lib_path, NULL, 0, 0, -1, verbose);
 		err = Err_poco_lib_invalid;
 		goto error;
 	}
 	
 	if (exe->hdr.version != POCOREX_VERSION) {
-		fprintf(stderr, "Error: Poco library '%s' version mismatch\n", name);
-		fprintf(stderr, "  Expected version: %d, Library version: %d\n", POCOREX_VERSION, exe->hdr.version);
+		format_poco_lib_error(Err_poco_lib_version, name, lib_path, NULL,
+		                      POCOREX_VERSION, exe->hdr.version, -1, verbose);
 		err = Err_poco_lib_version;
 		goto error;
 	}
 	
 	if (exe->lib.lib == NULL || exe->lib.count == 0) {
-		fprintf(stderr, "Error: Poco library '%s' contains no functions\n", name);
-		fprintf(stderr, "  Library count: %d, Library pointer: %s\n", 
-		        exe->lib.count, exe->lib.lib == NULL ? "NULL" : "valid");
+		format_poco_lib_error(Err_poco_lib_empty, name, lib_path, NULL,
+		                      0, 0, exe->lib.count, verbose);
 		err = Err_poco_lib_empty;
 		goto error;
 	}
@@ -365,15 +424,20 @@ Errcode pj_load_pocorex(Poco_lib **lib, const char* script_path, char *name, cha
 	if (exe->hdr.init != NULL) {
 		err = exe->hdr.init((void*)exe, NULL);
 		if (err < Success) {
+			/* Init failed - cleanup will be called in error path */
+			init_called = true;  /* Mark init as called even though it failed */
 			goto error;
 		}
+		init_called = true;  /* Init succeeded */
 	}
 	
 	loaded = (Poco_lib_loaded*)malloc(sizeof(Poco_lib_loaded));
 	if (loaded == NULL) {
 		err = Err_no_memory;
-		if (exe->hdr.cleanup != NULL) {
+		/* If init was called and malloc fails, we need cleanup before goto error */
+		if (init_called && exe->hdr.cleanup != NULL) {
 			exe->hdr.cleanup((void*)exe);
+			init_called = false;  /* Cleanup done, don't do it again in error path */
 		}
 		goto error;
 	}
@@ -386,7 +450,28 @@ Errcode pj_load_pocorex(Poco_lib **lib, const char* script_path, char *name, cha
 	return Success;
 	
 error:
-	if (exe != NULL && exe->hdr.cleanup != NULL) {
+	/*****************************************************************************
+	 * Error cleanup path
+	 * 
+	 * This section ensures proper cleanup of all allocated resources when
+	 * library loading fails. The cleanup order is critical:
+	 * 
+	 * 1. Call library's cleanup function (if init was called successfully)
+	 *    - Only called if init_called is true
+	 *    - This allows the library to clean up its own internal state
+	 * 
+	 * 2. Close the dynamic library handle (if dlopen succeeded)
+	 *    - Must be done after calling cleanup, since cleanup is in the library
+	 *    - Prevents handle leaks on error paths
+	 * 
+	 * Note: We don't free 'loaded' here because it's only allocated at the very
+	 * end, after all error-prone operations. If we reach 'error:' label, either:
+	 * - loaded is NULL (not yet allocated), or
+	 * - loaded was allocated but we already cleaned it up before goto error
+	 * 
+	 * The 'exe' pointer points into the library's static data, so we never free it.
+	 ****************************************************************************/
+	if (init_called && exe != NULL && exe->hdr.cleanup != NULL) {
 		exe->hdr.cleanup((void*)exe);
 	}
 	if (handle != NULL) {
