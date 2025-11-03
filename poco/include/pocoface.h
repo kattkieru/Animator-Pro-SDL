@@ -26,7 +26,8 @@ Errcode compile_poco(void **ppev,	/* returns executable pexe on Success */
 	char *err_fname,	/* file where error detected */
 	long *err_line, 	/* line where error detected */
 	int *err_char,		/* character in line where err detected */
-	Names *include_dirs /* include search path */
+	Names *include_dirs, /* include search path */
+	bool verbose		/* enable verbose debug output */
 	);
 /* Compile poco function.  Leave error messages in a file named errors.
    Otherwise build up executable structure in *ppev */
@@ -83,7 +84,8 @@ Errcode compile_poco(void **ppev,
 	char *err_fname,
 	long *err_line,
 	int *err_char,
-	Names *include_dirs);
+	Names *include_dirs,
+	bool verbose);
 
 Errcode run_poco(void **ppev,
 	char *trace_name,

@@ -232,7 +232,7 @@ static char* find_library_file(const char* libname)
 	return NULL;
 }
 
-Errcode pj_load_pocorex(Poco_lib **lib, const char* script_path, char *name, char *id_string)
+Errcode pj_load_pocorex(Poco_lib **lib, const char* script_path, char *name, char *id_string, bool verbose)
 /*****************************************************************************
  *
  ****************************************************************************/

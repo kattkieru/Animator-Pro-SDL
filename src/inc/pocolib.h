@@ -126,7 +126,7 @@ extern void poco_freez(Popot* pt);
 extern char* po_fuf_name(void* fuf);
 extern void* po_fuf_code(void* fuf);
 extern Rnode* po_in_rlist(Dlheader* sfi, void* f);
-extern Errcode pj_load_pocorex(Poco_lib** lib, const char* script_path, char* name, char* id_str);
+extern Errcode pj_load_pocorex(Poco_lib** lib, const char* script_path, char* name, char* id_str, bool verbose);
 extern void pj_free_pocorexes(Poco_lib** libs);
 extern int po_findpoe(char* libname, Lib_proto** plibreturn);
 extern Errcode po_poe_overtime(void* effect, void* data);

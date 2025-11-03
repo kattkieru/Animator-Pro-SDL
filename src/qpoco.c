@@ -218,7 +218,7 @@ Errcode err;
 
 if ((err = compile_poco(&pev, source_name, poco_err_name
 , NULL/*"H:dump"*/, get_poco_libs()
-, err_file, &err_line, &err_char, get_poco_include_pathlist())) >= Success)
+, err_file, &err_line, &err_char, get_poco_include_pathlist(), false)) >= Success)
 	{
 	err = run_poco(&pev, poco_err_name, po_check_abort, NULL, &err_line);
 	free_poco(&pev);
@@ -247,7 +247,7 @@ CHAIN_ANOTHER_PROGRAM:					// loop point for chaining programs
 	err = compile_poco(&pev, sourcename, poco_err_name,
 				NULL/*"H:dump"*/, get_poco_libs(),
 				err_file, &err_line, &err_char,
-				get_poco_include_pathlist());
+				get_poco_include_pathlist(), false);
 	if (err >= Success)
 	{
 		save_undo();
@@ -296,7 +296,7 @@ set_current_program_path(name); 	/* used by compiler for #include, etc */
 
 return compile_poco(&cl_pev, name, poco_err_name,
 		NULL, get_poco_libs(),
-		err_file, &err_line, &err_char, get_poco_include_pathlist());
+		err_file, &err_line, &err_char, get_poco_include_pathlist(), false);
 }
 
 

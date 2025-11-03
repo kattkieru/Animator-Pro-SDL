@@ -220,19 +220,36 @@ static char* pp_findfile(Names* idirs, char* fname)
 	static char path[PATH_SIZE];
 	FILE* f;
 	int namelen;
+	PoBoolean verbose = (ppcb && ppcb->t.verbose);
+	PoBoolean found = false;
 
 	if (0 == (namelen = strlen(fname))) /* naughty naughty user...	  */
 		return NULL;					/* ...can't fool us that easy */
 
+	if (verbose) {
+		fprintf(stderr, "[poco include] #include search for '%s'\n", fname);
+	}
+
 	while (idirs != NULL) {
 		if (namelen + strlen(idirs->name) < PATH_SIZE) {
 			sprintf(path, "%s%s", idirs->name, fname);
+			if (verbose) {
+				fprintf(stderr, "[poco include search] trying '%s'\n", path);
+			}
 			if (NULL != (f = fopen(path, "r"))) {
 				fclose(f);
+				found = true;
+				if (verbose) {
+					fprintf(stderr, "[poco include search] found '%s'\n", path);
+				}
 				return path;
 			}
 		}
 		idirs = idirs->next;
+	}
+
+	if (verbose && !found) {
+		fprintf(stderr, "[poco include search] not found for '%s'\n", fname);
 	}
 
 	return NULL;
@@ -547,6 +564,11 @@ static void pp_print_library_search_candidates(Poco_cb* pcb, const char* libname
     const char* platform_ext;
     const char* dot = strrchr(libname, '.');
     int has_ext = (dot && dot != libname && *(dot + 1) != '\0');
+
+    /* Only print if verbose flag is enabled */
+    if (!pcb || !pcb->t.verbose) {
+        return;
+    }
 
 #ifdef _WIN32
     platform_ext = ".dll";

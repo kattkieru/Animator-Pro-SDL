@@ -374,13 +374,15 @@ Poco_lib* po_open_library(Poco_cb* pcb, char* libname, char* id_string)
 		return pcb->builtin_lib;
 	}
 	else {
-		fprintf(stderr, "[poco library] #pragma poco library '%s' encountered\n", libname);
+		if (pcb->t.verbose) {
+			fprintf(stderr, "[poco library] #pragma poco library '%s' encountered\n", libname);
+		}
 		{
 			const char* script_path = NULL;
 			if (pcb && pcb->t.file_stack && pcb->t.file_stack->name) {
 				script_path = pcb->t.file_stack->name;
 			}
-			if ((err = pj_load_pocorex(&ll, script_path, libname, id_string)) < Success) {
+			if ((err = pj_load_pocorex(&ll, script_path, libname, id_string, pcb->t.verbose)) < Success) {
 			errline(err, "can't load poco lib.");
 			return (NULL);
 			}
@@ -461,7 +463,8 @@ Errcode compile_poco(void** ppexe,		 /* returns executable pexe on Success */
 					 char* err_file,	 /* file where error detected */
 					 long* err_line,	 /* line where error detected */
 					 int* err_char,		 /* character in line where err detected */
-					 Names* include_dirs /* include search path */
+					 Names* include_dirs, /* include search path */
+					 bool verbose		 /* enable verbose debug output */
 )
 {
 	Poco_cb* pcb;
@@ -481,6 +484,7 @@ Errcode compile_poco(void** ppexe,		 /* returns executable pexe on Success */
 
 		pcb->t.err_file		= stdout;
 		pcb->t.include_dirs = include_dirs;
+		pcb->t.verbose		= verbose;
 
 		pcb->libfunc	 = NULL;
 		pcb->builtin_lib = lib;

@@ -484,6 +484,7 @@ static void usage()
 	fprintf(stdout, "  -t            Enable instruction trace (development).\n");
 #endif
 	fprintf(stdout, "  -v            Print version and exit.\n");
+	fprintf(stdout, "  -V            Enable verbose debug output.\n");
 	fprintf(stdout, "  -g            Launch Poco GUI (if available).\n");
 
 	fflush(stdout);
@@ -522,6 +523,7 @@ int main(int argc, char* argv[])
 	char* sfname = NULL; /* Source file name.	*/
 	char* dfname = NULL; /* Dump file name.		*/
 	bool runflag = true;
+	bool verbose = false;
 	char* argp;
 	int counter;
 	Poco_lib* builtin_libs;
@@ -566,9 +568,11 @@ int main(int argc, char* argv[])
 					builtin_libs = NULL;
 					break;
 				case 'v':
-				case 'V':
 					print_version();
 					return 0;
+				case 'V':
+					verbose = true;
+					break;
 				case 'g':
 				case 'G':
 					gui_mode = true;
@@ -607,7 +611,7 @@ int main(int argc, char* argv[])
 
 	const int compile_status = compile_poco(&pexe, sfname, NULL,
 									dfname, builtin_libs, err_file, &err_line,
-											&err_char, incdirs);
+											&err_char, incdirs, verbose);
 
 	if (compile_status == Success) {
 #ifdef DEVELOPMENT
