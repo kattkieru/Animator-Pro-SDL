@@ -29,13 +29,3 @@ static Lib_proto poe_calls[] = {
 };
 
 Setup_Pocorex(NOFUNC, NOFUNC, "Hello POE", poe_calls);
-
-/*----------------------------------------------------------------------------
- * Entry point function - must be exported as a public symbol
- *--------------------------------------------------------------------------*/
-
-POCO_EXPORT Pocorex* poco_rexlib_get(void)
-{
-	return &rexlib_header;
-}
-

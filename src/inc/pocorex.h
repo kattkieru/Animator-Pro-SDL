@@ -44,7 +44,7 @@ typedef struct pocorex_hdr {
  * a pointer to a statically allocated Pocorex structure.
  ****************************************************************************/
 
-#define POCOREX_VERSION 	0
+#define POCOREX_VERSION 	200
 
 typedef struct pocorex {
 	Pocorex_hdr hdr;		/* poco library header */
@@ -88,12 +88,25 @@ typedef Pocorex* (*Poco_rexlib_get_func)(void);
  * Note: The library must export poco_rexlib_get() as a public symbol.
  *****************************************************************************/
 
+/* kiki note:
+ * I extended this macro to add the poco_rexlib_get function at the end.
+ * This is the new method for getting access to the libprotos from the
+ * compiled binary; the old way was very DOS-specific, and this should be
+ * more portable.  Adding the function to the macro should simplify porting
+ * forward old modules, without needing to add that extra bit.
+ */
+
 #define Setup_Pocorex(init, cleanup, libname, libprotos) \
  static char _l_name[] = libname;\
  Pocorex rexlib_header = { \
    {POCOREX_VERSION, init, cleanup, _l_name}, \
    {NULL, _l_name, libprotos, (sizeof(libprotos)/sizeof(libprotos[0]))} \
- };
+ };\
+ \
+POCO_EXPORT Pocorex* poco_rexlib_get(void) \
+{ \
+	return &rexlib_header; \
+}
 
 #endif /* POCOREX_H */
 

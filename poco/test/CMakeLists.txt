@@ -131,8 +131,8 @@ add_poco_test(ffi_01 "po_ffi_01.poc")
 # This test verifies that #pragma poco library can load and use POE modules
 add_test(
     NAME "poco_hello_library"
-    COMMAND $<TARGET_FILE:poco> "${CMAKE_CURRENT_SOURCE_DIR}/hello_test.poc"
-    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+    COMMAND ${CMAKE_SOURCE_DIR}/_install/poco ${CMAKE_SOURCE_DIR}/_install/tests/hello.poc
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/_install/"
 )
 set_tests_properties("poco_hello_library" PROPERTIES
     PASS_REGULAR_EXPRESSION "Hello from POE!|Test completed successfully"

@@ -34,14 +34,7 @@ else()
     target_compile_options(hello PRIVATE -fvisibility=default)
 endif()
 
-## Copy hello library to test directory so tests can find it
-add_custom_command(TARGET hello POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory
-        "${CMAKE_SOURCE_DIR}/poco/test"
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        $<TARGET_FILE:hello>
-        "${CMAKE_SOURCE_DIR}/poco/test/hello.poe"
-    COMMENT "Copying hello.poe to test directory"
-)
+INSTALL(TARGETS hello DESTINATION ${CMAKE_INSTALL_PREFIX}/tests/)
 
-INSTALL(TARGETS hello DESTINATION ${CMAKE_INSTALL_PREFIX}/resource/)
+# Install the demonstration script alongside tests
+INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/hello.poc DESTINATION ${CMAKE_INSTALL_PREFIX}/tests/)
