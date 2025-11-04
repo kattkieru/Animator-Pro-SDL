@@ -1,3 +1,14 @@
+/*****************************************************************************
+ * src/pocorex.c - Library loading for main Animator Pro application
+ * 
+ * NOTE: This file contains code similar to poco/src/pocoload.c. The 
+ * duplication is intentional because:
+ * - This version is compiled into the main 'ani' executable
+ * - It uses ani-specific functions like make_resource_name()
+ * - The standalone poco executable has its own version in poco/src/pocoload.c
+ * 
+ * If you modify library loading logic, consider updating both files.
+ ****************************************************************************/
 
 #include "errcodes.h"
 #include "filepath.h"
@@ -202,96 +213,6 @@ static char* try_load_path(const char* base_dir, const char* libname, char* out_
 			return out_path;
 		}
 	}
-	
-	return NULL;
-}
-
-static char* find_library_file(const char* libname)
-{
-	static char result_path[PATH_SIZE];
-	char test_path[PATH_SIZE];
-	char dir_path[PATH_SIZE];
-	char resource_path[PATH_SIZE];
-	
-	if (libname == NULL || strlen(libname) == 0) {
-		return NULL;
-	}
-	
-	result_path[0] = '\0';
-	
-	if (getcwd(dir_path, sizeof(dir_path)) != NULL) {
-		size_t len = strlen(dir_path);
-		if (len > 0 && dir_path[len - 1] != '/' && dir_path[len - 1] != '\\') {
-			strcat(dir_path, "/");
-		}
-		if (try_load_path(dir_path, libname, test_path) != NULL) {
-			strncpy(result_path, test_path, PATH_SIZE - 1);
-			result_path[PATH_SIZE - 1] = '\0';
-			return result_path;
-		}
-	}
-	
-	if (make_resource_name(libname, resource_path) != NULL) {
-		const char* existing_ext = strrchr(resource_path, '.');
-		if (existing_ext != NULL) {
-			if (try_load_path("", resource_path, test_path) != NULL) {
-				strncpy(result_path, test_path, PATH_SIZE - 1);
-				result_path[PATH_SIZE - 1] = '\0';
-				return result_path;
-			}
-		}
-		const char* extensions[] = {".poe", get_platform_extension(), NULL};
-		const char* ext_ptr;
-		int ext_idx = 0;
-		while ((ext_ptr = extensions[ext_idx++]) != NULL) {
-			char full_path[PATH_SIZE];
-			snprintf(full_path, PATH_SIZE, "%s%s", resource_path, ext_ptr);
-			FILE* test_file = fopen(full_path, "r");
-			if (test_file != NULL) {
-				fclose(test_file);
-				strncpy(result_path, full_path, PATH_SIZE - 1);
-				result_path[PATH_SIZE - 1] = '\0';
-				return result_path;
-			}
-		}
-	}
-	
-#ifdef _WIN32
-	char exe_path[PATH_SIZE];
-	DWORD len = GetModuleFileNameA(NULL, exe_path, PATH_SIZE);
-	if (len > 0) {
-		get_directory_from_path(exe_path, dir_path, sizeof(dir_path));
-		if (strlen(dir_path) > 0 && try_load_path(dir_path, libname, test_path) != NULL) {
-			strncpy(result_path, test_path, PATH_SIZE - 1);
-			result_path[PATH_SIZE - 1] = '\0';
-			return result_path;
-		}
-	}
-#else
-	char exe_path[PATH_SIZE];
-	ssize_t len = readlink("/proc/self/exe", exe_path, PATH_SIZE - 1);
-	if (len > 0) {
-		exe_path[len] = '\0';
-		get_directory_from_path(exe_path, dir_path, sizeof(dir_path));
-		if (strlen(dir_path) > 0 && try_load_path(dir_path, libname, test_path) != NULL) {
-			strncpy(result_path, test_path, PATH_SIZE - 1);
-			result_path[PATH_SIZE - 1] = '\0';
-			return result_path;
-		}
-	}
-#ifdef __APPLE__
-	char bundle_path[PATH_SIZE * 2];
-	uint32_t bundle_size = sizeof(bundle_path);
-	if (_NSGetExecutablePath(bundle_path, &bundle_size) == 0) {
-		get_directory_from_path(bundle_path, dir_path, sizeof(dir_path));
-		if (strlen(dir_path) > 0 && try_load_path(dir_path, libname, test_path) != NULL) {
-			strncpy(result_path, test_path, PATH_SIZE - 1);
-			result_path[PATH_SIZE - 1] = '\0';
-			return result_path;
-		}
-	}
-#endif
-#endif
 	
 	return NULL;
 }
