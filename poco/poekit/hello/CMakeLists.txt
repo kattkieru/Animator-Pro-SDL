@@ -1,28 +1,21 @@
 cmake_minimum_required(VERSION 3.25 FATAL_ERROR)
 
-# Build hello as a shared library
-add_library(hello SHARED hello.c)
+# Include the Poco POE library helper
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/poco/cmake")
+include(PocoPoeLibrary)
 
-# Set output name to hello.poe for cross-platform compatibility
-set_target_properties(hello PROPERTIES
-    OUTPUT_NAME "hello"
-    PREFIX ""
-    SUFFIX ".poe"
+# Build hello.poe using the helper function
+# The helper automatically:
+#   - Creates a shared library with .poe extension
+#   - Sets up include paths to src/inc and poco/include
+#   - Installs library to INSTALL_DIR
+#   - Installs and registers the test file
+add_poe_library(hello
+    SOURCES hello.c
+    DEPS libpoco
+    INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/tests
+    TEST_FILE hello.poc
 )
-
-# Set position independent code (required for shared libraries)
-set_target_properties(hello PROPERTIES
-    POSITION_INDEPENDENT_CODE ON
-)
-
-# Include directories - need headers from src/inc and poco/include
-target_include_directories(hello PRIVATE
-    "${CMAKE_CURRENT_SOURCE_DIR}/../../../src/inc"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../../include"
-)
-
-# Link against libpoco (for Pocorex structure definitions)
-target_link_libraries(hello PRIVATE libpoco)
 
 # For Windows, symbols are exported via __declspec(dllexport) in source
 if(WIN32)
@@ -33,8 +26,3 @@ else()
     # Set visibility defaults for Linux/macOS
     target_compile_options(hello PRIVATE -fvisibility=default)
 endif()
-
-INSTALL(TARGETS hello DESTINATION ${CMAKE_INSTALL_PREFIX}/tests/)
-
-# Install the demonstration script alongside tests
-INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/hello.poc DESTINATION ${CMAKE_INSTALL_PREFIX}/tests/)
