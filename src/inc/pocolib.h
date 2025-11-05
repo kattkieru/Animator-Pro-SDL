@@ -1077,6 +1077,55 @@ typedef struct porexlib
  *	 Macros to provide a poe module indirect access to builtin poco libs...
  ****************************************************************************/
 
+#ifndef HOSTLIB_DEFINED
+#define HOSTLIB_DEFINED
+typedef struct hostlib {
+	void *next;
+	USHORT type;
+	USHORT version;
+} Hostlib;
+#endif
+
+#ifndef POREXLIB_PUBLIC_DEFINED
+#define POREXLIB_PUBLIC_DEFINED
+struct rgb3; /* forward */
+typedef Errcode OTFunc(void* data, int ix, int total, int scale);
+typedef struct porexlib {
+    Libhead hdr;
+    Errcode* pl_builtin_err;
+    void* (*pl_getpicscreen)(void);
+    void* (*pl_ppt2ptr)(Popot ppt);
+    Popot (*pl_ptr2ppt)(void* ptr, int bytes);
+    int (*pl_getmucolors)(Pixel** indicies, struct rgb3** lastrgbs, struct rgb3** idealrgbs);
+    int (*pl_findpoe)(char* poename, Lib_proto** plibreturn);
+    Errcode (*pl_overtime)(OTFunc* effect, void* data);
+    bool (*pl_checkabort)(void* data);
+    Errcode (*pl_oversegment)(OTFunc* effect, void* data);
+    Errcode (*pl_overall)(OTFunc* effect, void* data);
+    char* vb;
+    char* vs;
+    long reserved1[4];
+    PolibUser* pluser;
+    PolibOptics* ploptics;
+    PolibSwap* plswap;
+    PolibScreen* plscreen;
+    PolibCel* plcel;
+    PolibDos* pldos;
+    PolibDraw* pldraw;
+    PolibAAFile* plaafile;
+    PolibMisc* plmisc;
+    PolibMode* plmode;
+    PolibText* pltext;
+    PolibTime* pltime;
+    PolibTurtle* plturtle;
+    PolibGlobalv* plglobalv;
+    PolibTitle* pltitle;
+    PolibTween* pltween;
+    PolibFlicPlay* plflicplay;
+    long reserved2[1];
+} Porexlib;
+#endif
+
 #ifndef SCALE_ONE
 #define SCALE_ONE (1 << 14) /* used by overtime effects routines */
 #endif
@@ -1437,6 +1486,7 @@ extern Hostlib _a_a_pocolib; /* this helps multi-source-module POE code */
 #define ptr2ppt _plptr->pl_ptr2ppt
 #define ppt2ptr _plptr->pl_ppt2ptr
 #define GetPicScreen _plptr->pl_getpicscreen
+#define GetScreenColorMap _plptr->pldraw->plGetScreenColorMap
 #define GetMenuColors _plptr->pl_getmucolors
 #define FindPoe _plptr->pl_findpoe
 #define OverTime _plptr->pl_overtime

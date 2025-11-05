@@ -33,7 +33,7 @@ static void free_safe_files(Poco_lib *lib)
 	Dlheader *sfi = &lib->resources;
 	Dlnode *node, *next;
 
-	for(node = sfi->head; NULL != (next = node->next); node = next)
+	for(node = sfi->head; node != NULL && (next = node->next) != NULL; node = next)
 		{
 		fclose(((Rnode *)node)->resource);
 		pj_free(node);
@@ -262,7 +262,7 @@ static Popot po_get_errno_pointer(void)
  ****************************************************************************/
 typedef struct mem_node
 	{
-	RNODE_FIELDS
+	RNODE_FIELDS;
 	long size;
 	} Mem_node;
 
@@ -318,7 +318,7 @@ static void free_safe_mem(Poco_lib *lib)
 	Dlheader *sfi = &lib->resources;
 	Dlnode *node, *next;
 
-	for(node = sfi->head; NULL != (next = node->next); node = next)
+	for(node = sfi->head; node != NULL && (next = node->next) != NULL; node = next)
 		{
 		pj_free(((Rnode *)node)->resource);
 		pj_free(node);

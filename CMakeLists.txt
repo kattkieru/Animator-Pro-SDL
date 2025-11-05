@@ -85,6 +85,9 @@ if (WITH_POCO)
 	include_directories(thirdparty/imgui/imgui/backends)
 	include_directories(thirdparty/imgui/imgui_club/imgui_memory_editor)
 
+	# Build animhost first (needed by POE modules)
+	add_subdirectory(src/animhost)
+	
 	# Add new standalone poco subproject
 	add_subdirectory(poco)
 

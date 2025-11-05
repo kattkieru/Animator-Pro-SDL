@@ -197,6 +197,17 @@ if (WITH_ANI)
 			VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_INSTALL_PREFIX}"
 	)
 
+	# Ensure ani can find libanimhost at runtime
+	if(APPLE)
+		set_target_properties(${PROJECT_NAME} PROPERTIES
+			INSTALL_RPATH "@loader_path"
+		)
+	elseif(UNIX)
+		set_target_properties(${PROJECT_NAME} PROPERTIES
+			INSTALL_RPATH "$ORIGIN"
+		)
+	endif()
+
 target_link_libraries(
 		${PROJECT_NAME}
 			trdfile
@@ -227,6 +238,8 @@ target_link_libraries(
 
 	if (WITH_POCO)
 		target_link_libraries(${PROJECT_NAME} libpoco)
+		# Animator uses internal pj_* from src/util/memalloc.c and links only animhost for _a_a_* handles
+		target_link_libraries(${PROJECT_NAME} animhost)
 	endif()
 	
 	if (CMAKE_GENERATOR STREQUAL "Xcode")

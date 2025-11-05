@@ -106,5 +106,9 @@ void format_poco_lib_error(Errcode err, const char* libname, const char* lib_pat
                            const char* sys_error, int expected_version, 
                            int actual_version, int count, bool verbose);
 
+/* Loader entry points used by poco and by Animator when WITH_POCO */
+Errcode pj_load_pocorex(Poco_lib **lib, const char* script_path, char *name, char *id_string, bool verbose);
+void pj_free_pocorexes(Poco_lib **libs);
+
 #endif /* POCOLoad_H */
 

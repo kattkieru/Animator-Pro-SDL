@@ -93,6 +93,9 @@ void bad_cookie(Memchunk *chunk,ULONG cookie,char *txt)
 
 
 
+/* When using an external host for pj_* (e.g., pocohost),
+ * avoid providing duplicate definitions here. */
+#ifndef USE_EXTERNAL_PJ_HOST
 void pj_free(void *p)
 {
 register Memchunk *chunk;
@@ -305,5 +308,6 @@ long lastsize;
 	add_tail(&alloclist,&chunk->anode);
 #endif /* ALLOCLIST */
 
-	return(&(chunk->mem));
+    return(&(chunk->mem));
 }
+#endif /* USE_EXTERNAL_PJ_HOST */

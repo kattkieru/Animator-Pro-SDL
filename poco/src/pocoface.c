@@ -71,6 +71,7 @@
 
 #include "jfile.h"
 #include "pocoface.h"
+#include "pocoload.h"
 #include "errcodes.h"
 #include "poco.h"
 #include <setjmp.h>

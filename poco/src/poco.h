@@ -112,7 +112,6 @@ extern "C"
  * #include's used by most everything in poco...
  ****************************************************************************/
 
-#include <memory.h>
 #include <stdio.h>
 #include <string.h>
 

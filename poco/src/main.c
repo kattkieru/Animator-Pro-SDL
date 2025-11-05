@@ -26,6 +26,7 @@
 #include "pocoface.h"
 #include "ptrmacro.h"
 #include "xfile.h"
+#include "pjhost.h"
 
 #ifdef _MSC_VER
 #include <float.h>
@@ -79,14 +80,15 @@ void dump_func_frame(const char* name, const Func_frame* frame_in);
 /****************************************************************************
  *
  ***************************************************************************/
+#ifndef USE_EXTERNAL_PJ_HOST
 void* pj_malloc(size_t i)
 {
-	USHORT* pt;
-	pt = malloc(i + sizeof(*pt));
-	if (pt != NULL) {
-		*pt++ = MMAG;
-	}
-	return pt;
+    USHORT* pt;
+    pt = malloc(i + sizeof(*pt));
+    if (pt != NULL) {
+        *pt++ = MMAG;
+    }
+    return pt;
 }
 
 /****************************************************************************
@@ -94,13 +96,13 @@ void* pj_malloc(size_t i)
  ***************************************************************************/
 void* pj_zalloc(size_t size)
 {
-	void* pt;
-	pt = pj_malloc(size);
-	if (pt == NULL) {
-		return NULL;
-	}
-	poco_zero_bytes(pt, size);
-	return pt;
+    void* pt;
+    pt = pj_malloc(size);
+    if (pt == NULL) {
+        return NULL;
+    }
+    poco_zero_bytes(pt, size);
+    return pt;
 }
 
 /****************************************************************************
@@ -108,23 +110,23 @@ void* pj_zalloc(size_t size)
  ***************************************************************************/
 void pj_free(void* v)
 {
-	USHORT* pt = v;
+    USHORT* pt = v;
 
-	if (pt == NULL) {
-		fprintf(stdout, "main_freemem: freeing NULL!\n");
-		exit(-1);
-	}
-	if (*(--pt) != MMAG) {
-		if (*pt == FMAG) {
-			fprintf(stdout, "main_freemem: freeing memory twice\n");
-			exit(-1);
-		} else {
-			fprintf(stdout, "main_freemem: Bad start magic\n");
-			exit(-1);
-		}
-	}
-	*pt = FMAG;
-	free(pt);
+    if (pt == NULL) {
+        fprintf(stdout, "main_freemem: freeing NULL!\n");
+        exit(-1);
+    }
+    if (*(--pt) != MMAG) {
+        if (*pt == FMAG) {
+            fprintf(stdout, "main_freemem: freeing memory twice\n");
+            exit(-1);
+        } else {
+            fprintf(stdout, "main_freemem: Bad start magic\n");
+            exit(-1);
+        }
+    }
+    *pt = FMAG;
+    free(pt);
 }
 
 /****************************************************************************
@@ -132,9 +134,9 @@ void pj_free(void* v)
  ***************************************************************************/
 void pj_gentle_free(void* p)
 {
-	if (p != NULL) {
-		pj_free(p);
-	}
+    if (p != NULL) {
+        pj_free(p);
+    }
 }
 
 /****************************************************************************
@@ -142,9 +144,10 @@ void pj_gentle_free(void* p)
  ***************************************************************************/
 void pj_freez(void* p)
 {
-	pj_gentle_free(*(void**)p);
-	*(void**)p = NULL;
+    pj_gentle_free(*(void**)p);
+    *(void**)p = NULL;
 }
+#endif
 
 /* real implementations are provided in libpoco (pocoload.c) */
 

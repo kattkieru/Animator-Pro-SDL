@@ -33,7 +33,7 @@ function(add_poe_library TARGET)
     cmake_parse_arguments(
         POE
         ""                                      # no boolean options
-        "INSTALL_DIR;TEST_FILE"                 # single-value keywords
+        "INSTALL_DIR;TEST_FILE;RUNNER"          # single-value keywords
         "SOURCES;INCLUDES;DEPS;SCRIPTS"         # multi-value keywords
         ${ARGN}
     )
@@ -74,7 +74,7 @@ function(add_poe_library TARGET)
     # ----------------------------------------------------------------------
     if(APPLE)
         set_target_properties(${TARGET} PROPERTIES
-            INSTALL_RPATH "@loader_path"
+            INSTALL_RPATH "@loader_path;@loader_path/.."
         )
     elseif(UNIX)
         set_target_properties(${TARGET} PROPERTIES
@@ -92,6 +92,11 @@ function(add_poe_library TARGET)
     install(TARGETS ${TARGET}
         DESTINATION ${POE_INSTALL_DIR}
     )
+    # Also drop a copy next to the test script so dlopen finds libanimhost via @loader_path/..
+    if(POE_TEST_FILE)
+        install(TARGETS ${TARGET}
+            DESTINATION ${CMAKE_INSTALL_PREFIX}/tests)
+    endif()
 
     # ----------------------------------------------------------------------
     # 6. Optional: Install scripts to tests directory
@@ -114,12 +119,27 @@ function(add_poe_library TARGET)
         install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/${POE_TEST_FILE} 
                 DESTINATION ${CMAKE_INSTALL_PREFIX}/tests)
         
-        # Create CTest entry
+        # Determine which runner to use (default: poco)
+        if(NOT POE_RUNNER)
+            set(POE_RUNNER "poco")
+        endif()
+        
+        # Create CTest entry with appropriate runner
+        if(POE_RUNNER STREQUAL "ani")
+            # Use Animator for tests that require Animator features
+            add_test(
+                NAME "poco_${TARGET}"
+                COMMAND ${CMAKE_INSTALL_PREFIX}/ani -poc ${CMAKE_INSTALL_PREFIX}/tests/${_test_filename}
+                WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
+            )
+        else()
+            # Use standalone poco (default)
         add_test(
             NAME "poco_${TARGET}"
             COMMAND ${CMAKE_INSTALL_PREFIX}/poco ${CMAKE_INSTALL_PREFIX}/tests/${_test_filename}
             WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
         )
+        endif()
     endif()
 endfunction()
 

@@ -375,7 +375,7 @@ Errcode pj_load_pocorex(Poco_lib **lib, const char* script_path, char *name, cha
 	
 	if (id_string != NULL && exe->hdr.id_string != NULL) {
 		if (strcmp(id_string, exe->hdr.id_string) != 0) {
-			err = Err_rexlib_usertype;
+			err = Err_poco_lib_invalid;
 			goto error;
 		}
 	}

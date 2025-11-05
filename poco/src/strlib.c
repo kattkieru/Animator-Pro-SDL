@@ -5,10 +5,10 @@
 #include <string.h>
 
 #include "errcodes.h"
+#include "pjhost.h"
 #include "poco.h"
 #include "pocolib.h"
 #include "ptrmacro.h"
-#include "util.h"
 
 extern Errcode builtin_err;
 
