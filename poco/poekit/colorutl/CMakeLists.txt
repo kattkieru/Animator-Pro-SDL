@@ -15,6 +15,5 @@ add_poe_library(colorutl
     DEPS libpoco animhost
     INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/resource
     TEST_FILE coltest.poc
-    RUNNER ani
 )
 

@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 #include "errcodes.h"
 #include "linklist.h"
@@ -145,119 +146,118 @@ bool po_check_abort(void* nobody)
 	return false;
 }
 
-typedef struct iparams {
-	Popot x, y, left, right, key;
-} Iparms;
-
 /*****************************************************************************
- * service routine
+ * service routine — validate 5 input pointers
  ****************************************************************************/
-static Iparms* get_iparms(Iparms* p)
+static bool check_input_ptrs(int* x, int* y, int* left, int* right, int* key)
 {
-	if (p->x.pt == NULL || p->y.pt == NULL || p->left.pt == NULL || p->right.pt == NULL ||
-		p->key.pt == NULL) {
+	if (x == NULL || y == NULL || left == NULL || right == NULL || key == NULL) {
 		builtin_err = Err_null_ref;
-		return (NULL);
+		return false;
 	}
-	return (p);
+	return true;
 }
 
 /*****************************************************************************
- * service routine
+ * service routine — fill in input values from icb state
  ****************************************************************************/
-static void set_iparms(Iparms* p)
+static void set_input_values(int* x, int* y, int* left, int* right, int* key)
 {
-	*((int*)(p->x.pt)) = icb.mx;
-	*((int*)(p->y.pt)) = icb.my;
-	*((int*)(p->left.pt)) = ISDOWN(MBPEN);
-	*((int*)(p->right.pt)) = ISDOWN(MBRIGHT);
+	*x = icb.mx;
+	*y = icb.my;
+	*left = ISDOWN(MBPEN);
+	*right = ISDOWN(MBRIGHT);
 	if (JSTHIT(KEYHIT)) {
-		*((int*)(p->key.pt)) = icb.inkey;
+		*key = icb.inkey;
 	} else {
-		*((int*)(p->key.pt)) = 0;
+		*key = 0;
 	}
+// #region agent log
+{FILE* _dbg=fopen("/Users/kiki/dev/animatorpro/.cursor/debug.log","a");if(_dbg){fprintf(_dbg,"{\"location\":\"pocouser.c:set_input_values\",\"message\":\"input values set\",\"data\":{\"mx\":%d,\"my\":%d,\"left\":%d,\"right\":%d,\"key\":%d},\"hypothesisId\":\"H1\"}\n",*x,*y,*left,*right,*key);fclose(_dbg);}}
+// #endregion
 }
 
 /*****************************************************************************
  * Get input from pen-window.
  ****************************************************************************/
-static void po_wndo_input(Iparms* p, ULONG flags)
+static void po_wndo_input(int* x, int* y, int* left, int* right, int* key, ULONG flags)
 {
-	if ((p = get_iparms(p)) != NULL) {
+	if (check_input_ptrs(x, y, left, right, key)) {
 		wait_wndo_input(flags);
-		set_iparms(p);
+		set_input_values(x, y, left, right, key);
 	}
 }
 
 /*****************************************************************************
  * void WaitClick(int *x, int *y, int *left, int *right, int *key)
  ****************************************************************************/
-static void po_wait_click(Iparms pp)
+static void po_wait_click(int* x, int* y, int* left, int* right, int* key)
 {
-	po_wndo_input(&pp, ANY_CLICK);
+// #region agent log
+{FILE* _dbg=fopen("/Users/kiki/dev/animatorpro/.cursor/debug.log","a");if(_dbg){fprintf(_dbg,"{\"location\":\"pocouser.c:po_wait_click\",\"message\":\"WaitClick entry\",\"data\":{\"x\":\"%p\",\"y\":\"%p\",\"left\":\"%p\",\"right\":\"%p\",\"key\":\"%p\"},\"hypothesisId\":\"H1\"}\n",(void*)x,(void*)y,(void*)left,(void*)right,(void*)key);fclose(_dbg);}}
+// #endregion
+	po_wndo_input(x, y, left, right, key, ANY_CLICK);
 }
 
 /*****************************************************************************
  * void PollInput(int *x, int *y, int *left, int *right, int *key)
  ****************************************************************************/
-static void po_poll_input(Iparms pp)
+static void po_poll_input(int* x, int* y, int* left, int* right, int* key)
 {
-	po_wndo_input(&pp, ANY_INPUT);
+	po_wndo_input(x, y, left, right, key, ANY_INPUT);
 }
 
 /*****************************************************************************
  * void WaitInput(int *x, int *y, int *left, int *right, int *key)
  ****************************************************************************/
-static void po_wait_input(Iparms pp)
+static void po_wait_input(int* x, int* y, int* left, int* right, int* key)
 {
-	po_wndo_input(&pp, MMOVE | ANY_CLICK);
+	po_wndo_input(x, y, left, right, key, MMOVE | ANY_CLICK);
 }
 
 /*****************************************************************************
- * Get input from pen-window.
+ * Get input from physical screen.
  ****************************************************************************/
-static void po_physical_input(Iparms* p, ULONG flags)
+static void po_physical_input(int* x, int* y, int* left, int* right, int* key, ULONG flags)
 {
-	if ((p = get_iparms(p)) != NULL) {
+	if (check_input_ptrs(x, y, left, right, key)) {
 		wait_input(flags);
-		set_iparms(p);
+		set_input_values(x, y, left, right, key);
 	}
 }
 
 /*****************************************************************************
  * void PhysicalWaitClick(int *x, int *y, int *left, int *right, int *key)
  ****************************************************************************/
-static void po_physical_wait_click(Iparms pp)
+static void po_physical_wait_click(int* x, int* y, int* left, int* right, int* key)
 {
-	po_physical_input(&pp, ANY_CLICK);
+	po_physical_input(x, y, left, right, key, ANY_CLICK);
 }
 
 /*****************************************************************************
  * void PhysicalPollInput(int *x, int *y, int *left, int *right, int *key)
  ****************************************************************************/
-static void po_physical_poll_input(Iparms pp)
+static void po_physical_poll_input(int* x, int* y, int* left, int* right, int* key)
 {
-	Iparms* p;
-
-	if ((p = get_iparms(&pp)) != NULL) {
+	if (check_input_ptrs(x, y, left, right, key)) {
 		check_input(ANY_INPUT);
-		set_iparms(p);
+		set_input_values(x, y, left, right, key);
 	}
 }
 
 /*****************************************************************************
  * void PhysicalWaitInput(int *x, int *y, int *left, int *right, int *key)
  ****************************************************************************/
-static void po_physical_wait_input(Iparms pp)
+static void po_physical_wait_input(int* x, int* y, int* left, int* right, int* key)
 {
-	po_physical_input(&pp, MMOVE | ANY_CLICK);
+	po_physical_input(x, y, left, right, key, MMOVE | ANY_CLICK);
 }
 
 /*****************************************************************************
  * bool PhysicalRubMoveBox(int *x, int *y, int *w, int *h
  , bool clip_to_screen)
  ****************************************************************************/
-static bool po_physical_rub_move_box(Popot x, Popot y, Popot w, Popot h, bool clip_to_screen)
+static bool po_physical_rub_move_box(int* x, int* y, int* w, int* h, bool clip_to_screen)
 {
 	Wscreen* ws = icb.input_screen;
 	Marqihdr md;
@@ -265,14 +265,14 @@ static bool po_physical_rub_move_box(Popot x, Popot y, Popot w, Popot h, bool cl
 	Rectangle clip_rect;
 	Rectangle* pclip_rect = NULL;
 
-	if (x.pt == NULL || y.pt == NULL || w.pt == NULL || h.pt == NULL) {
+	if (x == NULL || y == NULL || w == NULL || h == NULL) {
 		builtin_err = Err_null_ref;
 		return (false);
 	}
-	rect.x = *((int*)(x.pt));
-	rect.y = *((int*)(y.pt));
-	rect.width = *((int*)(w.pt));
-	rect.height = *((int*)(h.pt));
+	rect.x = *x;
+	rect.y = *y;
+	rect.width = *w;
+	rect.height = *h;
 	if (clip_to_screen) {
 		copy_rectfields(ws->viscel, &clip_rect);
 		pclip_rect = &clip_rect;
@@ -281,10 +281,10 @@ static bool po_physical_rub_move_box(Popot x, Popot y, Popot w, Popot h, bool cl
 	if (marqmove_rect(&md, &rect, pclip_rect) < 0) {
 		return false;
 	}
-	*((int*)(x.pt)) = rect.x;
-	*((int*)(y.pt)) = rect.y;
-	*((int*)(w.pt)) = rect.width;
-	*((int*)(h.pt)) = rect.height;
+	*x = rect.x;
+	*y = rect.y;
+	*w = rect.width;
+	*h = rect.height;
 	return true;
 }
 
@@ -293,21 +293,21 @@ static bool po_physical_rub_move_box(Popot x, Popot y, Popot w, Popot h, bool cl
 /*****************************************************************************
  * bool RubBox(int *x, int *y, int *w, int *h)
  ****************************************************************************/
-static bool po_rub_box(Popot x, Popot y, Popot w, Popot h)
+static bool po_rub_box(int* x, int* y, int* w, int* h)
 {
 	Rectangle rect;
 
-	if (x.pt == NULL || y.pt == NULL || w.pt == NULL || h.pt == NULL) {
+	if (x == NULL || y == NULL || w == NULL || h == NULL) {
 		builtin_err = Err_null_ref;
 		return (false);
 	}
 	if (cut_out_rect(&rect) < 0) {
 		return (false);
 	} else {
-		*((int*)(x.pt)) = rect.x;
-		*((int*)(y.pt)) = rect.y;
-		*((int*)(w.pt)) = rect.width;
-		*((int*)(h.pt)) = rect.height;
+		*x = rect.x;
+		*y = rect.y;
+		*w = rect.width;
+		*h = rect.height;
 		return (true);
 	}
 }
@@ -315,12 +315,15 @@ static bool po_rub_box(Popot x, Popot y, Popot w, Popot h)
 /*****************************************************************************
  * bool RubLine(int x1, int y1, int *x2, int *y2)
  ****************************************************************************/
-static bool po_rub_line(int x1, int y1, Popot x2, Popot y2)
+static bool po_rub_line(int x1, int y1, int* x2, int* y2)
 {
+// #region agent log
+{FILE* _dbg=fopen("/Users/kiki/dev/animatorpro/.cursor/debug.log","a");if(_dbg){fprintf(_dbg,"{\"location\":\"pocouser.c:po_rub_line\",\"message\":\"RubLine entry\",\"data\":{\"x1\":%d,\"y1\":%d,\"x2\":\"%p\",\"y2\":\"%p\"},\"hypothesisId\":\"H1\"}\n",x1,y1,(void*)x2,(void*)y2);fclose(_dbg);}}
+// #endregion
 	Short_xy xys[2];
 	int ret;
 
-	if (x2.pt == NULL || y2.pt == NULL) {
+	if (x2 == NULL || y2 == NULL) {
 		builtin_err = Err_null_ref;
 		return (false);
 	}
@@ -331,8 +334,8 @@ static bool po_rub_line(int x1, int y1, Popot x2, Popot y2)
 	if (ret < 0) {
 		return (false);
 	} else {
-		*((int*)(x2.pt)) = xys[1].x;
-		*((int*)(y2.pt)) = xys[1].y;
+		*x2 = xys[1].x;
+		*y2 = xys[1].y;
 		return (true);
 	}
 }
@@ -390,26 +393,26 @@ static int po_rub_poly(Popot pxlist, Popot pylist)
 /*****************************************************************************
  * bool DragBox(int *x, int *y, int *w, int *h)
  ****************************************************************************/
-static bool po_drag_box(Popot x, Popot y, Popot w, Popot h)
+static bool po_drag_box(int* x, int* y, int* w, int* h)
 {
 	Rectangle rect;
 
-	if (x.pt == NULL || y.pt == NULL || w.pt == NULL || h.pt == NULL) {
+	if (x == NULL || y == NULL || w == NULL || h == NULL) {
 		builtin_err = Err_null_ref;
 		return (false);
 	}
 
-	rect.x = *((int*)(x.pt));
-	rect.y = *((int*)(y.pt));
-	rect.width = *((int*)(w.pt));
-	rect.height = *((int*)(h.pt));
+	rect.x = *x;
+	rect.y = *y;
+	rect.width = *w;
+	rect.height = *h;
 
 	if (rect_in_place(&rect) >= Success) {
 		if (clip_move_rect(&rect) >= Success) {
-			*((int*)(x.pt)) = rect.x;
-			*((int*)(y.pt)) = rect.y;
-			*((int*)(w.pt)) = rect.width;
-			*((int*)(h.pt)) = rect.height;
+			*x = rect.x;
+			*y = rect.y;
+			*w = rect.width;
+			*h = rect.height;
 			return true;
 		}
 	}
@@ -519,20 +522,23 @@ static bool po_YesNo(long vargcount, long vargsize, Popot question, ...)
 /*****************************************************************************
  * bool Qnumber(int *num, int min, int max, char *header)
  ****************************************************************************/
-static bool po_Slider(Popot inum, int min, int max, Popot hailing)
+static bool po_Slider(int* inum, int min, int max, char* hailing)
 {
+// #region agent log
+{FILE* _dbg=fopen("/Users/kiki/dev/animatorpro/.cursor/debug.log","a");if(_dbg){fprintf(_dbg,"{\"location\":\"pocouser.c:po_Slider\",\"message\":\"Qnumber entry\",\"data\":{\"inum\":\"%p\",\"min\":%d,\"max\":%d,\"hailing\":\"%s\"},\"hypothesisId\":\"H2\"}\n",(void*)inum,min,max,hailing?hailing:"(null)");fclose(_dbg);}}
+// #endregion
 	short num;
 	bool cancel;
 	bool mouse_was_on;
 
-	if (hailing.pt == NULL) {
-		hailing.pt = "";
+	if (hailing == NULL) {
+		hailing = "";
 	}
 
-	if (inum.pt == NULL) {
+	if (inum == NULL) {
 		return (builtin_err = Err_null_ref);
 	}
-	num = *((int*)(inum.pt));
+	num = *inum;
 
 	if ((num < SHRT_MIN) || (min < SHRT_MIN) || (max < SHRT_MIN) || (num > SHRT_MAX) ||
 		(min > SHRT_MAX) || (max > SHRT_MAX) || (min > max)) {
@@ -540,8 +546,8 @@ static bool po_Slider(Popot inum, int min, int max, Popot hailing)
 	}
 
 	mouse_was_on = show_mouse();
-	if (false != (cancel = qreq_number(&num, min, max, "%s", hailing.pt))) {
-		*((int*)(inum.pt)) = num;
+	if (false != (cancel = qreq_number(&num, min, max, "%s", hailing))) {
+		*inum = num;
 	}
 	if (!mouse_was_on) {
 		hide_mouse();

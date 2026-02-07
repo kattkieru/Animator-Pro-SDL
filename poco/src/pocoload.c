@@ -350,6 +350,19 @@ Errcode pj_load_pocorex(Poco_lib **lib, const char* script_path, char *name, cha
 		return Err_poco_lib_load_failed;
 	}
 	
+	/* If the loaded library (or one of its dependencies, e.g. animhost)
+	 * exports animhost_ensure_pocolib, call it to set up a minimal
+	 * standalone fallback for _a_a_pocolib.  This lets POE modules that
+	 * use builtin_err work under standalone poco without the Animator. */
+	{
+		typedef void (*ensure_pocolib_func)(void);
+		ensure_pocolib_func ensure =
+			(ensure_pocolib_func)poco_dlsym(handle, "animhost_ensure_pocolib");
+		if (ensure != NULL) {
+			ensure();
+		}
+	}
+
 	get_func = (Poco_rexlib_get_func)poco_dlsym(handle, "poco_rexlib_get");
 	if (get_func == NULL) {
 		format_poco_lib_error(Err_poco_lib_no_entry, name, lib_path, NULL, 0, 0, -1, verbose);

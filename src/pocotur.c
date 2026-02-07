@@ -2,6 +2,7 @@
 
 #include "ptrmacro.h"
 #include "errcodes.h"
+#include <stdio.h>
 #include "pocodraw.h"
 #include "pocoface.h"
 #include "pocolib.h"
@@ -57,16 +58,19 @@ static void po_tur_set_position(double x, double y, double degrees)
 /*****************************************************************************
  * void Where(double *x, double *y, double *angle)
  ****************************************************************************/
-static void po_tur_get_position(Popot x, Popot y, Popot degrees)
+static void po_tur_get_position(double* x, double* y, double* degrees)
 {
-	if (x.pt == NULL || y.pt == NULL || degrees.pt == NULL)
+// #region agent log
+{FILE* _dbg=fopen("/Users/kiki/dev/animatorpro/.cursor/debug.log","a");if(_dbg){fprintf(_dbg,"{\"location\":\"pocotur.c:po_tur_get_position\",\"message\":\"Where entry\",\"data\":{\"x\":\"%p\",\"y\":\"%p\",\"degrees\":\"%p\"},\"hypothesisId\":\"H3\"}\n",(void*)x,(void*)y,(void*)degrees);fclose(_dbg);}}
+// #endregion
+	if (x == NULL || y == NULL || degrees == NULL)
 	{
 		builtin_err = Err_null_ref;
 		return;
 	}
-	vass(x.pt,double) = xtur;
-	vass(y.pt,double) = ytur;
-	vass(degrees.pt,double) = atur;
+	*x = xtur;
+	*y = ytur;
+	*degrees = atur;
 }
 
 #define  PI 3.141592

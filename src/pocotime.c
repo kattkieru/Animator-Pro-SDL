@@ -3,6 +3,7 @@
 
 #include "jimk.h"
 #include "errcodes.h"
+#include <stdio.h>
 #include "pocoface.h"
 #include "pocolib.h"
 #include "auto.h"
@@ -121,7 +122,7 @@ return(insert_frames(count, vs.frame_ix));
 typedef struct poco1_dat
 	{
 	void *code;
-	Popot *pdata;
+	Popot pdata;  /* Popot reconstructed from raw void* for poco_cont_ops callback */
 	} Poco1_dat;
 
 Errcode poco1(Poco1_dat *pd, int ix, int total, int scale)
@@ -136,7 +137,7 @@ Pt_num ret;
 time = 1.0 * scale / SCALE_ONE;
 
 err = poco_cont_ops(pd->code, &ret,
-			(sizeof(Popot)+sizeof(time)), time, *pd->pdata);
+			(sizeof(Popot)+sizeof(time)), time, pd->pdata);
 
 if ((builtin_err = err) >= Success)
 	{
@@ -145,20 +146,22 @@ if ((builtin_err = err) >= Success)
 return(err);
 }
 
-static Errcode po_over_time(Popot effect, Popot data)
+static Errcode po_over_time(void* effect, void* data)
 /*****************************************************************************
  * ErrCode OverTime(ErrCode (*effect)(double time, void *data), void *data)
  ****************************************************************************/
 {
-	void *fuf;
+// #region agent log
+{FILE* _dbg=fopen("/Users/kiki/dev/animatorpro/.cursor/debug.log","a");if(_dbg){fprintf(_dbg,"{\"location\":\"pocotime.c:po_over_time\",\"message\":\"OverTime entry\",\"data\":{\"effect\":\"%p\",\"data\":\"%p\"},\"hypothesisId\":\"H3\"}\n",effect,data);fclose(_dbg);}}
+// #endregion
 	Poco1_dat pd;
 	Errcode err;
 	int omulti;
 
-	if ((fuf = effect.pt) == NULL)
+	if (effect == NULL)
 		return(builtin_err = Err_null_ref);
-	pd.pdata = &data;
-	if ((pd.code = po_fuf_code(fuf)) == NULL)
+	pd.pdata = (Popot){data, NULL, NULL};
+	if ((pd.code = po_fuf_code(effect)) == NULL)
 		return(Err_function_not_found);
 	free_render_cashes();
 	omulti = vs.multi;
@@ -169,20 +172,19 @@ static Errcode po_over_time(Popot effect, Popot data)
 	return(err);
 }
 
-static Errcode po_over_some(Popot *effect, Popot *data, enum automodes tmode)
+static Errcode po_over_some(void* effect, void* data, enum automodes tmode)
 /*****************************************************************************
  * This does a function over time without bringing up the Time Select panel.
  ****************************************************************************/
 {
-	void *fuf;
 	Poco1_dat pd;
 	Errcode err;
 	Autoarg aa;
 
-	if ((fuf = effect->pt) == NULL)
+	if (effect == NULL)
 		return(builtin_err = Err_null_ref);
-	pd.pdata = data;
-	if ((pd.code = po_fuf_code(fuf)) == NULL)
+	pd.pdata = (Popot){data, NULL, NULL};
+	if ((pd.code = po_fuf_code(effect)) == NULL)
 		return(Err_function_not_found);
 	free_render_cashes();
 	clear_struct(&aa);
@@ -194,20 +196,20 @@ static Errcode po_over_some(Popot *effect, Popot *data, enum automodes tmode)
 	return(err);
 }
 
-static Errcode po_over_segment(Popot effect, Popot data)
+static Errcode po_over_segment(void* effect, void* data)
 /*****************************************************************************
  * ErrCode OverSegment(ErrCode (*effect)(double time, void *data), void *data)
  ****************************************************************************/
 {
-return(po_over_some(&effect,&data,DOAUTO_SEGMENT));
+return(po_over_some(effect, data, DOAUTO_SEGMENT));
 }
 
-static Errcode po_over_all(Popot effect, Popot data)
+static Errcode po_over_all(void* effect, void* data)
 /*****************************************************************************
  * ErrCode OverAll(ErrCode (*effect)(double time, void *data), void *data)
  ****************************************************************************/
 {
-return(po_over_some(&effect,&data,DOAUTO_ALL));
+return(po_over_some(effect, data, DOAUTO_ALL));
 }
 
 Errcode po_poe_overtime(void *effect, void *data)
