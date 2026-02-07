@@ -78,14 +78,13 @@ static Errcode force_temp_files(void)
 
 		err = set_flisize(&flxsize);
 		if(err < Success) {
-			return (resize_pencel(true, true)); /* user will abort and exit */
+			return resize_pencel(true, true); /* user will abort and exit */
 		}
 
 		return open_tempflx(true);
 	}
 
-	err = set_penwndo_size(vb.screen->wndo.width,
-						   vb.screen->wndo.height);
+	err = set_penwndo_size(vb.screen->wndo.width, vb.screen->wndo.height);
 	if(err < 0)
 	{
 		return err;
@@ -118,7 +117,7 @@ static void push_close_toscreen(void)
 Errcode empty_newflx(void)
 /* Open a new empty flx, but with old settings */
 {
-Vset_flidef fdef;
+	Vset_flidef fdef;
 
 	if(load_default_flidef(&fdef) < Success
 		|| fdef.frame_count < 1)
@@ -127,7 +126,7 @@ Vset_flidef fdef;
 	}
 	vs.bframe_ix = 0;
 	rethink_settings();
-	return(empty_tempflx(fdef.frame_count));
+	return empty_tempflx(fdef.frame_count);
 }
 
 
@@ -138,8 +137,7 @@ static Errcode reopen_tempflx(bool reset)
 	/* if tflx is there re open it, otherwise open a new default flx
 	 * if that fails put up a new flx */
 
-	if( (!pj_exists(tflxname))
-		|| open_tempflx(true) < Success)
+	if( !pj_exists(tflxname) || open_tempflx(true) < Success)
 	{
 		if(reset)
 			err = open_default_flx();
@@ -241,7 +239,7 @@ static Errcode set_flisize(Rectangle *newsize)
 
 char *cl_poco_name;  /* loaded from arguments */
 char *cl_flic_name;  /* Flic loaded from arguments. */
-static char po_suffix[] = ".POC";
+static char po_suffix[] = ".poc";
 
 
 static Errcode go_vpaint(void)
@@ -478,7 +476,8 @@ int main(int argc, char** argv)
 		pj_delete(tflxname); /* Delete old tempflx */
 	}
 
-	if((err = force_temp_files()) < Success) {
+	err = force_temp_files();
+	if(err < Success) {
 		goto error;
 	}
 
@@ -503,10 +502,9 @@ int main(int argc, char** argv)
 				break;
 			case RESET_DEFAULT_FLX:
 				push_close_toscreen();
-				if((err = clear_vtemps(true)) < 0) {
-					goto error;
-				}
-				if((err = open_default_flx()) < 0) {
+				clear_vtemps(true);
+				err = open_default_flx();
+				if(err < 0) {
 					goto error;
 				}
 			case RESTART_VPAINT:
@@ -588,12 +586,12 @@ bool was_zoom;
 			return err;
 		}
 
-		if((err = clear_vtemps(reset)) < Success) {
-			return err;
+		clear_vtemps(reset);
+		if(set_flisize(&newsize) >= Success)
+		{
+			break;
 		}
 
-		if(set_flisize(&newsize) >= Success)
-			break;
 		/* try again */
 	}
 
