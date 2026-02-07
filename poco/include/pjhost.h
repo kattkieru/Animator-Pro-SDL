@@ -2,7 +2,7 @@
 #define PJHOST_H
 
 #include <stddef.h>
-#include "errcodes.h"
+#include "poco_errcodes.h"
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 #define POCOHOST_EXPORT __declspec(dllexport)

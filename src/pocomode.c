@@ -1,6 +1,7 @@
 /* pocomode.c - poco library functions that get/set drawing state
    and other variables. */
 
+#include <stdio.h>
 #include <string.h>
 
 #include "jimk.h"
@@ -21,18 +22,18 @@ extern void set_ccycle(bool newcyc);
 /*****************************************************************************
  * ErrCode SetInk(char *name)
  ****************************************************************************/
-static Errcode po_ink_set(Popot name)
+static Errcode po_ink_set(char* name)
 {
 	extern Option_tool* ink_list;
 	Option_tool* l;
 
-	if (name.pt == NULL) {
+	if (name == NULL) {
 		return builtin_err = Err_null_ref;
 	}
 
 	l = ink_list;
 	while (l != NULL) {
-		if (txtcmp(name.pt, l->name) == 0) {
+		if (txtcmp(name, l->name) == 0) {
 			free_render_cashes();
 			set_curink(l);
 			set_render_fast();
@@ -47,11 +48,13 @@ static Errcode po_ink_set(Popot name)
 /*****************************************************************************
  * void GetInk(char *buf)
  ****************************************************************************/
-static void po_get_ink(Popot name)
+static void po_get_ink(char* name)
 {
-	if (Popot_bufcheck(&name, 16) >= Success) {
-		strcpy(name.pt, vl.ink->ot.name);
+	if (name == NULL) {
+		builtin_err = Err_null_ref;
+		return;
 	}
+	strcpy(name, vl.ink->ot.name);
 }
 
 /*****************************************************************************

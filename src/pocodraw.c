@@ -7,6 +7,7 @@
  *				SetColorMap() and SetScreenColorMap() now set dirties.
  ****************************************************************************/
 
+#include <stdio.h>
 #include "errcodes.h"
 #include "ptrmacro.h"
 #include "fli.h"
@@ -281,15 +282,15 @@ static void po_clear_pic(void)
 /*****************************************************************************
  * void GetSize(int *width, int *height);
  ****************************************************************************/
-static void po_get_screen_dims(Popot width, Popot height)
+static void po_get_screen_dims(int* width, int* height)
 {
-	if (width.pt == NULL || height.pt == NULL)
+	if (width == NULL || height == NULL)
 	{
 		builtin_err = Err_null_ref;
 		return;
 	}
-	vass(width.pt,int) = vb.pencel->width;
-	vass(height.pt,int) = vb.pencel->height;
+	*width = vb.pencel->width;
+	*height = vb.pencel->height;
 }
 
 

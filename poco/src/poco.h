@@ -131,8 +131,8 @@ extern "C"
 	#include "token.h"
 #endif
 
-#ifndef ERRCODES_H
-#include "errcodes.h"
+#ifndef POCO_ERRCODES_H
+#include "poco_errcodes.h"
 #endif
 
 #ifndef PTRMACRO_H
@@ -804,6 +804,7 @@ extern "C"
 	/* in pocoface.c */
 
 	extern Errcode builtin_err;
+	void poco_set_error(const char* fmt, ...);
 
 	/* in pocoutil.asm */
 

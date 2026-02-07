@@ -168,7 +168,7 @@ static Errcode alloc_wild_list(Names** pwild_list,
 	int count = 0;
 	SDL_PathInfo info;
 	char full_path[1024];
-	char** files = SDL_GlobDirectory(search_folder, "*", SDL_GLOB_CASEINSENSITIVE, &count);
+	char** files = SDL_GlobDirectory(search_folder, wild, SDL_GLOB_CASEINSENSITIVE, &count);
 
 	for (i = 0; i < count; i++) {
 		snprintf(full_path, 1024, "%s/%s", search_folder, files[i]);

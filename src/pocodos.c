@@ -275,7 +275,7 @@ PolibDos po_libdos = {
 	po_fnmerge,
 	"ErrCode fnmerge(char *path, char *device, char *dir, char *file, char *suf);",
 	po_exists,
-	"bool DosExists(char *filename);",
+	"Boolean DosExists(char *filename);",
 	po_dos_copy,
 	"ErrCode DosCopy(char *source, char *dest);",
 	po_delete,

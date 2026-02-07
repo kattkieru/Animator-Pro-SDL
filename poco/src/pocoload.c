@@ -1,8 +1,11 @@
 
-#include "errcodes.h"
+#include "poco_errcodes.h"
 #include "filepath.h"
 #include "pocorex.h"
 #include "pocolib.h"
+
+/* Forward declaration from pocoface.c */
+extern void poco_set_error(const char* fmt, ...);
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -327,6 +330,7 @@ Errcode pj_load_pocorex(Poco_lib **lib, const char* script_path, char *name, cha
 	lib_path = poco_find_library_file(script_path, name, verbose);
 	if (lib_path == NULL) {
 		format_poco_lib_error(Err_poco_lib_not_found, name, NULL, NULL, 0, 0, -1, verbose);
+		poco_set_error("Poco library '%s' not found", name);
 		return Err_poco_lib_not_found;
 	}
 	
@@ -342,12 +346,14 @@ Errcode pj_load_pocorex(Poco_lib **lib, const char* script_path, char *name, cha
 	if (handle == NULL) {
 		const char* err_msg = poco_dlerror();
 		format_poco_lib_error(Err_poco_lib_load_failed, name, lib_path, err_msg, 0, 0, -1, verbose);
+		poco_set_error("Failed to load poco library '%s': %s", name, err_msg ? err_msg : "unknown error");
 		return Err_poco_lib_load_failed;
 	}
 	
 	get_func = (Poco_rexlib_get_func)poco_dlsym(handle, "poco_rexlib_get");
 	if (get_func == NULL) {
 		format_poco_lib_error(Err_poco_lib_no_entry, name, lib_path, NULL, 0, 0, -1, verbose);
+		poco_set_error("Poco library '%s' missing entry point 'poco_rexlib_get'", name);
 		err = Err_poco_lib_no_entry;
 		goto error;
 	}
@@ -355,20 +361,24 @@ Errcode pj_load_pocorex(Poco_lib **lib, const char* script_path, char *name, cha
 	exe = get_func();
 	if (exe == NULL) {
 		format_poco_lib_error(Err_poco_lib_invalid, name, lib_path, NULL, 0, 0, -1, verbose);
+		poco_set_error("Poco library '%s' returned invalid structure", name);
 		err = Err_poco_lib_invalid;
 		goto error;
 	}
 	
 	if (exe->hdr.version != POCOREX_VERSION) {
-		format_poco_lib_error(Err_poco_lib_version, name, lib_path, NULL, 
+		format_poco_lib_error(Err_poco_lib_version, name, lib_path, NULL,
 		                      POCOREX_VERSION, exe->hdr.version, -1, verbose);
+		poco_set_error("Poco library '%s' version mismatch (expected %d, got %d)",
+		               name, POCOREX_VERSION, exe->hdr.version);
 		err = Err_poco_lib_version;
 		goto error;
 	}
 	
 	if (exe->lib.lib == NULL || exe->lib.count == 0) {
-		format_poco_lib_error(Err_poco_lib_empty, name, lib_path, NULL, 
+		format_poco_lib_error(Err_poco_lib_empty, name, lib_path, NULL,
 		                      0, 0, exe->lib.count, verbose);
+		poco_set_error("Poco library '%s' contains no functions", name);
 		err = Err_poco_lib_empty;
 		goto error;
 	}

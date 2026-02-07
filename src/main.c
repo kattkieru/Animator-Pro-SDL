@@ -273,8 +273,13 @@ static Errcode go_vpaint(void)
 		if (err < Success && err != Err_abort)
 		{
 			cleanup(true);
-			if (err == Err_in_err_file) {
-				po_file_to_stdout(poco_err_name);
+			if (err == POCO_ERR_IN_ERR_FILE) {
+				const char* poco_msg = poco_get_error();
+				if (poco_msg != NULL && poco_msg[0] != '\0') {
+					fprintf(stdout, "%s\n", poco_msg);
+				} else {
+					po_file_to_stdout(poco_err_name);
+				}
 			}
 			exit(err);
 		}
@@ -456,8 +461,13 @@ int main(int argc, char** argv)
 	if (cl_poco_name != NULL) {
 		err = compile_cl_poco(cl_poco_name);
 		if (err < Success) {
-			if (err == Err_in_err_file) {
-				po_file_to_stdout(poco_err_name);
+			if (err == POCO_ERR_IN_ERR_FILE) {
+				const char* poco_msg = poco_get_error();
+				if (poco_msg != NULL && poco_msg[0] != '\0') {
+					fprintf(stdout, "%s\n", poco_msg);
+				} else {
+					po_file_to_stdout(poco_err_name);
+				}
 			}
 			err = Err_reported;
 			goto error;

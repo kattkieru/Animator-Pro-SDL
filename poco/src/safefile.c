@@ -10,7 +10,7 @@
 #include "poco.h"
 #include "pocolib.h"
 #include "ptrmacro.h"
-#include "errcodes.h"
+#include "poco_errcodes.h"
 #include "linklist.h"
 #include "poco_port.h"
 

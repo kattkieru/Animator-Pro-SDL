@@ -65,9 +65,9 @@
  *--------------------------------------------------------------------------*/
 
 #define PUBLIC_CODE
+#include "errcodes.h"   /* host error codes (must precede pocorex.h)     */
 #include "rexlib.h"     /* required for the hostlibs                     */
 #include "pocorex.h"    /* required header file, also includes pocolib.h */
-#include "errcodes.h"   /* most POE programs will need error codes info  */
 #include "cmap.h"       /* this one defines Rgb3 and such for us.        */
 
 

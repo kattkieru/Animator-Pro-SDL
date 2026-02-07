@@ -3,8 +3,8 @@
  *           This should trigger Err_poco_lib_empty
  ****************************************************************************/
 
-#include "pocorex.h"
 #include "errcodes.h"
+#include "pocorex.h"
 
 /* Manually set up the structure with count=0 and lib=NULL */
 static Pocorex empty_pocorex = {

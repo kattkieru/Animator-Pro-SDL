@@ -20,6 +20,9 @@ static void free_allocated_screens(Poco_lib *lib)
 Dlheader *sfi = &lib->resources;
 Dlnode *node, *next;
 
+if (sfi->head == NULL)
+	return;
+
 for(node = sfi->head; NULL != (next = node->next); node = next)
 	{
 	pj_rcel_free(((Rnode *)node)->resource);

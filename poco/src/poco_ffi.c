@@ -556,6 +556,7 @@ Po_FFI* po_ffi_find_binding_by_name(const Poco_run_env* env, const char* name)
 int po_ffi_build_structures(Poco_run_env* env)
 {
 	if (!env || !env->protos || !env->protos->next || !env->protos->next->mlink) {
+		poco_set_error("FFI: no library prototypes available");
 		return Err_poco_ffi_no_protos;
 	}
 
@@ -569,7 +570,7 @@ int po_ffi_build_structures(Poco_run_env* env)
 	/* allocate funcmap */
 	env->func_map = po_ffi_funcmap_new();
 	if (!env->func_map) {
-		fprintf(stderr, "%s: Unable to allocate func map\n", __FUNCTION__);
+		poco_set_error("FFI: unable to allocate function map");
 		return Err_poco_ffi_no_func_map;
 	}
 
@@ -596,8 +597,7 @@ int po_ffi_build_structures(Poco_run_env* env)
 				//				fprintf(stderr, "%s: Pointer for func '%s' already exists\n",
 				//						__FUNCTION__, frame->name);
 			} else {
-				fprintf(stderr, "%s: Unable to insert '%s' into func map (error %d)\n",
-						__FUNCTION__, frame->name, put_result);
+				poco_set_error("FFI: unable to insert '%s' into function map", frame->name);
 				return Err_poco_ffi_no_map_insert;
 			}
 		}

@@ -3,7 +3,7 @@ authors = ["kiki <charles@skeletalstudios.com>"]
 channels = ["conda-forge"]
 name = "animator-pro"
 platforms = ["osx-64", "osx-arm64"]
-version = "0.1.0"
+version = "1.4"
 
 [tasks]
 configure = { cmd="cmake -B _build -S . -G Ninja -DCMAKE_INSTALL_PREFIX=_install -DWITH_ANI=1 -DWITH_POCO=1" }

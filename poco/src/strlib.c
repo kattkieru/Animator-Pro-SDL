@@ -4,7 +4,7 @@
 #include <stdarg.h>
 #include <string.h>
 
-#include "errcodes.h"
+#include "poco_errcodes.h"
 #include "pjhost.h"
 #include "poco.h"
 #include "pocolib.h"

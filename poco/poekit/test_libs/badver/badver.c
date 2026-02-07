@@ -3,8 +3,8 @@
  *            This should trigger Err_poco_lib_version
  ****************************************************************************/
 
-#include "pocorex.h"
 #include "errcodes.h"
+#include "pocorex.h"
 
 static void dummy_func(void)
 {

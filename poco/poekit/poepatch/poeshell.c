@@ -6,8 +6,8 @@
  * include the usual header files...
  *--------------------------------------------------------------------------*/
 
-#include "pocorex.h"
 #include "errcodes.h"
+#include "pocorex.h"
 #include "patch10a.h"
 
 /*----------------------------------------------------------------------------

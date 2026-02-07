@@ -481,7 +481,7 @@ qfont_text,
 	"void    Qfont(void);",
 /* From here on new with Ani Pro 1.5 */
 po_can_scale_font,
-	"bool CanScaleFont(void);",
+	"Boolean CanScaleFont(void);",
 po_scale_font,
 	"Errcode ScaleFont(int height);",
 po_set_font_spacing,

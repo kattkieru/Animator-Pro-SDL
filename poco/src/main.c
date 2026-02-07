@@ -20,7 +20,7 @@
 
 #include "aaconfig.h"
 #include "commonst.h"
-#include "errcodes.h"
+#include "poco_errcodes.h"
 #include "jimk.h"
 #include "poco.h"
 #include "pocoface.h"

@@ -13,8 +13,8 @@
 #ifndef STDTYPES_H
 #include "stdtypes.h"
 #endif
-#ifndef ERRCODES_H
-#include "errcodes.h"
+#ifndef POCO_ERRCODES_H
+#include "poco_errcodes.h"
 #endif
 
 #include <stdarg.h>
