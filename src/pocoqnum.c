@@ -33,30 +33,24 @@ static Errcode ppupdate(Upddat* udd, SHORT value)
 					 void *data, char *fmt, ...)
 	 Will abort requestor if update returns < Success
  ****************************************************************************/
-bool po_UdSlider(long vargcount, long vargsize, Popot inum, int min, int max, Popot update,
-				 Popot data, Popot pofmt, ...)
+bool po_UdSlider(int* inum, int min, int max, void* update,
+				 void* data, char* fmt, ...)
 {
 	short num;
 	bool cancel;
 	bool mouse_was_on;
 	Upddat udd;
 	va_list args;
-	char* fmt;
 
-	va_start(args, pofmt);
-	fmt = pofmt.pt;
+	va_start(args, fmt);
 	if (fmt == NULL) {
 		fmt = "";
 	}
 
-	if (Success > po_check_formatf(0, vargcount, vargsize, fmt, args)) {
-		return builtin_err;
-	}
-
-	if (inum.pt == NULL) {
+	if (inum == NULL) {
 		return builtin_err = Err_null_ref;
 	}
-	num = *((int*)(inum.pt));
+	num = *inum;
 
 	if ((num < SHRT_MIN) || (min < SHRT_MIN) || (max < SHRT_MIN) || (num > SHRT_MAX) ||
 		(min > SHRT_MAX) || (max > SHRT_MAX) || (min > max)) {
@@ -65,21 +59,21 @@ bool po_UdSlider(long vargcount, long vargsize, Popot inum, int min, int max, Po
 
 	mouse_was_on = show_mouse();
 
-	udd.code = update.pt;
+	udd.code = update;
 	if (udd.code != NULL) {
 		udd.code = po_fuf_code(udd.code);
-		udd.ppdat = &data;
+		udd.ppdat = (Popot*)&data;  // TODO: needs rework for proper callback data
 	}
 
 	cancel = varg_qreq_number(&num, min, max, ppupdate, &udd, NULL, fmt, args);
 
 	if (cancel != false) {
-		*((int*)(inum.pt)) = num;
+		*inum = num;
 	}
-
 
 	if (!mouse_was_on) {
 		hide_mouse();
 	}
+	va_end(args);
 	return cancel;
 }

@@ -245,69 +245,54 @@ typedef struct polib_swap
 
 typedef struct polib_screen
 {
-	Popot (*plGetPicScreen)(void);
+	void* (*plGetPicScreen)(void);
 	char* protostr1;
-	Popot (*plGetSwapScreen)(void);
+	void* (*plGetSwapScreen)(void);
 	char* protostr2;
-	Popot (*plGetUndoScreen)(void);
+	void* (*plGetUndoScreen)(void);
 	char* protostr3;
-	Popot (*plGetCelScreen)(void);
+	void* (*plGetCelScreen)(void);
 	char* protostr3a;
-	Errcode (*plAllocScreen)(Popot screen, int width, int height);
+	Errcode (*plAllocScreen)(Popot* screen, int width, int height);
 	char* protostr4;
-	void (*plFreeScreen)(Popot screen);
+	void (*plFreeScreen)(Popot* screen);
 	char* protostr5;
-	void (*plGetScreenSize)(Popot s, Popot x, Popot y);
+	void (*plGetScreenSize)(void* s, int* x, int* y);
 	char* protostr6;
-	void (*plSetPixel)(Popot s, int color, int x, int y);
+	void (*plSetPixel)(void* s, int color, int x, int y);
 	char* protostr7;
-	int (*plGetPixel)(Popot s, int x, int y);
+	int (*plGetPixel)(void* s, int x, int y);
 	char* protostr8;
-	void (*plSetBlock)(Popot s, Popot pixbuf, int x, int y, int width, int height);
+	void (*plSetBlock)(void* s, char* pixbuf, int x, int y, int width, int height);
 	char* protostr9;
-	void (*plGetBlock)(Popot s, Popot pixbuf, int x, int y, int width, int height);
+	void (*plGetBlock)(void* s, char* pixbuf, int x, int y, int width, int height);
 	char* protostr10;
-	void (*plIconBlit)(Popot source,
-					   int snext,
-					   int sx,
-					   int sy,
-					   int width,
-					   int height,
-					   Popot dest,
-					   int dx,
-					   int dy,
-					   int color);
+	void (*plIconBlit)(void* source, int snext, int sx, int sy,
+					   int width, int height, void* dest, int dx, int dy, int color);
 	char* protostr11;
-	void (*plBlit)(Popot source, int sx, int sy, int width, int height, Popot dest, int dx, int dy);
+	void (*plBlit)(void* source, int sx, int sy, int width, int height, void* dest, int dx, int dy);
 	char* protostr12;
-	void (*plKeyBlit)(Popot source,
-					  int sx,
-					  int sy,
-					  int width,
-					  int height,
-					  Popot dest,
-					  int dx,
-					  int dy,
-					  int key_color);
+	void (*plKeyBlit)(void* source, int sx, int sy, int width, int height,
+					  void* dest, int dx, int dy, int key_color);
 	char* protostr13;
-	void (*plCopyScreen)(Popot source, Popot dest);
+	void (*plCopyScreen)(void* source, void* dest);
 	char* protostr14;
-	void (*plTradeScreen)(Popot a, Popot b);
+	void (*plTradeScreen)(void* a, void* b);
 	char* protostr15;
 	void (*plPicDirtied)(void);
 	char* protostr16;
 	/* New with Ani Pro 1.5 */
-	Popot (*plGetPhysicalScreen)(void);
+	void* (*plGetPhysicalScreen)(void);
 	char* protostr17;
-	void (*plSetBox)(Popot screen, int color, int x, int y, int width, int height);
+	void (*plSetBox)(void* screen, int color, int x, int y, int width, int height);
 	char* protostr18;
-	void (*plMenuText)(Popot screen, int color, int x, int y, Popot text);
+	void (*plMenuText)(void* screen, int color, int x, int y, char* text);
 	char* protostr19;
-	int (*plMenuTextWidth)(Popot text);
+	int (*plMenuTextWidth)(char* text);
 	char* protostr20;
 	int (*plMenuTextHeight)(void);
 	char* protostr21;
-	void (*plGetMenuColors)(Popot black, Popot grey, Popot light, Popot bright, Popot red);
+	void (*plGetMenuColors)(int* black, int* grey, int* light, int* bright, int* red);
 	char* protostr22;
 } PolibScreen;
 
@@ -777,35 +762,30 @@ typedef struct polib_turtle
 
 typedef struct polib_user
 {
-	int (*plprintf)(long vcount, long vsize, Popot format, ...);
+	int (*plprintf)(char* format, ...);
 	char* protostr1;
 	void (*plunprintf)(void);
 	char* protostr2;
-	void (*plQtext)(long vcount, long vsize, Popot format, ...);
+	void (*plQtext)(char* format, ...);
 	char* protostr3;
-	int (*plQchoice)(long vcount, long vsize, Popot buttons, int bcount, Popot header, ...);
+	int (*plQchoice)(Popot* buttons, int bcount, char* header, ...);
 	char* protostr4;
-	int (*plQmenu)(Popot choices, int ccount, Popot header);
+	int (*plQmenu)(Popot* choices, int ccount, char* header);
 	char* protostr5;
-	bool (*plQquestion)(long vcount, long vsize, Popot question, ...);
+	bool (*plQquestion)(char* question, ...);
 	char* protostr6;
 	bool (*plQnumber)(int* num, int min, int max, char* header);
 	char* protostr7;
-	bool (*plQstring)(Popot string, int size, Popot header);
+	bool (*plQstring)(char* string, int size, char* header);
 	char* protostr8;
-	bool (*plQfile)(Popot suffix,
-					   Popot button,
-					   Popot inpath,
-					   Popot outpath,
-					   bool force_suffix,
-					   Popot header);
+	bool (*plQfile)(char* suffix, char* button, char* inpath, char* outpath,
+					bool force_suffix, char* header);
 	char* protostr9;
-	bool (
-	  *plQlist)(Popot choicestr, Popot choice, Popot items, int icount, Popot ipos, Popot header);
+	bool (*plQlist)(char* choicestr, int* choice, Popot* items, int icount, int* ipos, char* header);
 	char* protostr10;
 	int (*plQcolor)(void);
 	char* protostr11;
-	Errcode (*plQerror)(long vcount, long vsize, Errcode err, Popot format, ...);
+	Errcode (*plQerror)(Errcode err, char* format, ...);
 	char* protostr12;
 	bool (*plRubBox)(int* x, int* y, int* w, int* h);
 	char* protostr13;
@@ -813,7 +793,7 @@ typedef struct polib_user
 	char* protostr14;
 	bool (*plRubLine)(int x1, int y1, int* x2, int* y2);
 	char* protostr15;
-	int (*plRubPoly)(Popot x, Popot y);
+	int (*plRubPoly)(Popot* x, Popot* y);
 	char* protostr16;
 	bool (*plDragBox)(int* x, int* y, int* w, int* h);
 	char* protostr16a;
@@ -833,22 +813,14 @@ typedef struct polib_user
 	char* protostr23;
 	bool (*plShowCursor)(void);
 	char* protostr24;
-	bool (
-	  *plQscroll)(Popot choice, Popot items, int icount, Popot ipos, Popot button_texts, Popot hdr);
+	int (*plQscroll)(int* choice, Popot* items, int icount, int* ipos, Popot* button_texts, char* hdr);
 	char* protostr25;
-	bool (*plUdQnumber)(long vcount,
-						   long vsize,
-						   Popot inum,
-						   int min,
-						   int max,
-						   Popot update,
-						   Popot data,
-						   Popot pofmt,
-						   ...);
+	bool (*plUdQnumber)(int* inum, int min, int max, void* update,
+						void* data, char* fmt, ...);
 	char* protostr26;
-	int (*plQedit)(Popot ptext, int max_size, Popot cursor_position, Popot top_line);
+	int (*plQedit)(char* text, int max_size, int* cursor_position, int* top_line);
 	char* protostr27;
-	int (*plQeditFile)(Popot pop_file_name, Popot cursor_position, Popot top_line);
+	int (*plQeditFile)(char* file_name, int* cursor_position, int* top_line);
 	char* protostr28;
 	void (*plPhysicalWaitClick)(int* x, int* y, int* left, int* right, int* key);
 	char* protostr29;
@@ -858,7 +830,7 @@ typedef struct polib_user
 	char* protostr31;
 	bool (*plPhysicalRubMoveBox)(int* x, int* y, int* width, int* height, bool clip_to_screen);
 	char* protostr32;
-	int (*plQmenuWithFlags)(Popot pchoices, int ccount, Popot pflags, Popot header);
+	int (*plQmenuWithFlags)(Popot* pchoices, int ccount, short* pflags, char* header);
 	char* protostr33;
 } PolibUser;
 
@@ -868,17 +840,17 @@ typedef struct polib_user
 
 typedef struct polib_globalv
 {
-	Errcode (*plGlobalVarGet)(Popot name, Popot value);
+	Errcode (*plGlobalVarGet)(char* name, char* value);
 	char* protostr1;
-	Errcode (*plGlobalVarSet)(Popot name, Popot value);
+	Errcode (*plGlobalVarSet)(char* name, char* value);
 	char* protostr2;
-	Errcode (*plGlobalVarDelete)(Popot name);
+	Errcode (*plGlobalVarDelete)(char* name);
 	char* protostr3;
 	Errcode (*plGlobalVarFlush)(void);
 	char* protostr4;
-	Errcode (*plGlobalVarFirst)(Popot nameptr, Popot valueptr);
+	Errcode (*plGlobalVarFirst)(char** nameptr, char** valueptr);
 	char* protostr5;
-	Errcode (*plGlobalVarNext)(Popot nameptr, Popot valueptr);
+	Errcode (*plGlobalVarNext)(char** nameptr, char** valueptr);
 	char* protostr6;
 } PolibGlobalv;
 

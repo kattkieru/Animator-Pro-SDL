@@ -137,9 +137,9 @@ void make_circle_flic(void)
 
 	changes = poeGetChangeCount();
 	if (changes != 0) {
-		if (!poeQquestion(1,sizeof(int),
-				str2ppt("You have %d unsaved changes.\n\n"
-						"Okay to discard changes and create new flic?"),
+		if (!poeQquestion(
+				"You have %d unsaved changes.\n\n"
+				"Okay to discard changes and create new flic?",
 				changes)
 			)
 			return;  // user said no, just punt.

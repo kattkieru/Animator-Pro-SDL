@@ -326,10 +326,19 @@ Errcode poco_cont_ops(void* code_pt, Pt_num* pret, int arglength, ...)
 				}
 				binding = po_ffi_find_binding(pe, ip->func);
 				if (builtin_err < Success) {
+// #region agent log
+{FILE*_df=fopen("/Users/kiki/dev/animatorpro/.cursor/debug.log","a");if(_df){fprintf(_df,"{\"hypothesisId\":\"H12\",\"location\":\"runops.c:CCALL_pre_check\",\"message\":\"stale builtin_err before call\",\"data\":{\"builtin_err\":%d,\"next_func\":\"%s\"}}\n",(int)builtin_err,binding?binding->name:"NULL");fclose(_df);}}
+// #endregion
 					goto ERR_IN_LIBROUTINE;
 				}
 
-				acc.ret = po_ffi_call(binding, stack, pe->variadic_types);
+					acc.ret = po_ffi_call(binding, stack, pe->variadic_types);
+// #region agent log
+if(builtin_err<Success){FILE*_df=fopen("/Users/kiki/dev/animatorpro/.cursor/debug.log","a");if(_df){fprintf(_df,"{\"hypothesisId\":\"H12\",\"location\":\"runops.c:CCALL_post\",\"message\":\"builtin_err set by call\",\"data\":{\"builtin_err\":%d,\"func_name\":\"%s\"}}\n",(int)builtin_err,binding?binding->name:"NULL");fclose(_df);}}
+// #endregion
+				if (builtin_err < Success) {
+					goto ERR_IN_LIBROUTINE;
+				}
 				ip		= OPTR(ip, sizeof(ip->func));
 				break;
 
@@ -1603,6 +1612,9 @@ ERR_SMALL:
 	goto DEBUG;
 
 ERR_BIG:
+// #region agent log
+{FILE*_df=fopen("/Users/kiki/dev/animatorpro/.cursor/debug.log","a");if(_df){fprintf(_df,"{\"hypothesisId\":\"H13\",\"location\":\"runops.c:ERR_BIG\",\"message\":\"bounds check failed\",\"data\":{\"pt\":\"%p\",\"min\":\"%p\",\"max\":\"%p\"}}\n",acc.ret.ppt.pt,acc.ret.ppt.min,acc.ret.ppt.max);fclose(_df);}}
+// #endregion
 	err = Err_index_big;
 	goto DEBUG;
 
@@ -1613,6 +1625,9 @@ ERR_INLINE_FPMATH:			   // the host has indicated an 80x87 math err happened
 	goto DEBUG;				   // as occurring in the poco code, not a lib routine.
 
 ERR_IN_LIBROUTINE:
+// #region agent log
+{FILE*_df=fopen("/Users/kiki/dev/animatorpro/.cursor/debug.log","a");if(_df){fprintf(_df,"{\"hypothesisId\":\"H12\",\"location\":\"runops.c:ERR_IN_LIBROUTINE\",\"message\":\"lib error caught\",\"data\":{\"builtin_err\":%d}}\n",(int)builtin_err);fclose(_df);}}
+// #endregion
 	err = builtin_err;
 	if (err == Err_poco_exit)		 // the ONLY thing that can set this
 	{								 // is poco's builtin exit() function,

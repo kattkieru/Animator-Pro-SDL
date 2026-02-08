@@ -327,10 +327,14 @@ static Globalv* find_global_var(char* name)
  *	 search for the named variable and if found return its value in the
  *	 specified string.	if not found, the return string is unchanged.
  ****************************************************************************/
-static Errcode po_gvar_get(Popot name, Popot value)
+static Errcode po_gvar_get(char* name, char* value)
 {
 	Globalv* var;
 	Errcode err;
+
+// #region agent log
+{FILE*_df=fopen("/Users/kiki/dev/animatorpro/.cursor/debug.log","a");if(_df){fprintf(_df,"{\"hypothesisId\":\"H20\",\"runId\":\"post-fix\",\"location\":\"pocogvar.c:po_gvar_get\",\"message\":\"entry\",\"data\":{\"name\":\"%p\",\"value\":\"%p\"}}\n",(void*)name,(void*)value);fclose(_df);}}
+// #endregion
 
 	if (NULL == varlist) {
 		err = load_global_vars();
@@ -339,20 +343,24 @@ static Errcode po_gvar_get(Popot name, Popot value)
 		}
 	}
 
-	if (NULL == name.pt) {
+	if (NULL == name) {
 		return builtin_err = Err_null_ref;
 	}
 
-	var = find_global_var(name.pt);
+// #region agent log
+{FILE*_df=fopen("/Users/kiki/dev/animatorpro/.cursor/debug.log","a");if(_df){fprintf(_df,"{\"hypothesisId\":\"H20\",\"runId\":\"post-fix\",\"location\":\"pocogvar.c:before_find\",\"message\":\"about to call find_global_var\",\"data\":{\"name_str\":\"%.50s\"}}\n",name);fclose(_df);}}
+// #endregion
+
+	var = find_global_var(name);
 	if (NULL == var) {
 		return Err_not_found;
 	}
 
-	if (Popot_bufcheck(&value, 1 + strlen(var->value))) {
-		return builtin_err;
+	if (NULL == value) {
+		return builtin_err = Err_null_ref;
 	}
 
-	strcpy(value.pt, var->value);
+	strcpy(value, var->value);
 	return Success;
 }
 
@@ -360,11 +368,15 @@ static Errcode po_gvar_get(Popot name, Popot value)
  * ErrCode GlobalVarSet(char *name, char *value);
  *	 set the named variable to the specified value.
  ****************************************************************************/
-static Errcode po_gvar_set(Popot name, Popot value)
+static Errcode po_gvar_set(char* name, char* value)
 {
 	Errcode err;
 	Globalv* var;
 	char* newvalue;
+
+// #region agent log
+{FILE*_df=fopen("/Users/kiki/dev/animatorpro/.cursor/debug.log","a");if(_df){fprintf(_df,"{\"hypothesisId\":\"H14\",\"location\":\"pocogvar.c:po_gvar_set\",\"message\":\"entry\",\"data\":{\"name\":\"%p\",\"value\":\"%p\",\"name_str\":\"%.50s\",\"value_str\":\"%.50s\"}}\n",(void*)name,(void*)value,name?name:"NULL",value?value:"NULL");fclose(_df);}}
+// #endregion
 
 	if (NULL == varlist) {
 		err = load_global_vars();
@@ -373,23 +385,23 @@ static Errcode po_gvar_set(Popot name, Popot value)
 		}
 	}
 
-	if (NULL == name.pt || NULL == value.pt) {
+	if (NULL == name || NULL == value) {
 		return builtin_err = Err_null_ref;
 	}
 
-	if (strlen(name.pt) > MAX_VNAME_LEN || strlen(value.pt) > MAX_VVALUE_LEN) {
+	if (strlen(name) > MAX_VNAME_LEN || strlen(value) > MAX_VVALUE_LEN) {
 		return builtin_err = Err_truncated;
 	}
 
-	if (NULL == (var = find_global_var(name.pt))) {
-		if (NULL == new_global_var(name.pt, value.pt)) {
+	if (NULL == (var = find_global_var(name))) {
+		if (NULL == new_global_var(name, value)) {
 			return Err_no_memory;
 		}
 	} else {
-		if (strlen(value.pt) <= strlen(var->value)) {  // copy in place if
-			strcpy(var->value, value.pt);              // it fits.
+		if (strlen(value) <= strlen(var->value)) {  // copy in place if
+			strcpy(var->value, value);              // it fits.
 		} else {
-			newvalue = new_value(value.pt);
+			newvalue = new_value(value);
 			if (NULL == newvalue) {
 				return Err_no_memory;
 			}
@@ -408,7 +420,7 @@ static Errcode po_gvar_set(Popot name, Popot value)
  * Errcode GlobalVarDelete(char *name);
  *	delete the named variable.
  ****************************************************************************/
-static Errcode po_gvar_del(Popot name)
+static Errcode po_gvar_del(char* name)
 {
 	Errcode err;
 	Globalv* var;
@@ -420,15 +432,15 @@ static Errcode po_gvar_del(Popot name)
 		}
 	}
 
-	if (name.pt == NULL) {
+	if (name == NULL) {
 		return builtin_err = Err_null_ref;
 	}
 
-	if ((*(char*)name.pt) == 0x00) {
+	if (name[0] == 0x00) {
 		return Err_not_found;  // naughty caller passed an empty string!
 	}
 
-	var = find_global_var(name.pt);
+	var = find_global_var(name);
 	if (NULL == var) {
 		return Err_not_found;
 	}
@@ -445,7 +457,7 @@ static Errcode po_gvar_del(Popot name)
 /*****************************************************************************
  *
  ****************************************************************************/
-static Errcode po_gvar_next(Popot nameptr, Popot valueptr)
+static Errcode po_gvar_next(char** nameptr, char** valueptr)
 {
 	Globalv* cur = listnext;
 
@@ -453,12 +465,12 @@ static Errcode po_gvar_next(Popot nameptr, Popot valueptr)
 		return Err_not_found;
 	}
 
-	if (NULL == nameptr.pt || NULL == valueptr.pt) {
+	if (NULL == nameptr || NULL == valueptr) {
 		return builtin_err = Err_null_ref;
 	}
 
-	*((Popot*)nameptr.pt) = po_ptr2ppt(cur->name, 0);
-	*((Popot*)valueptr.pt) = po_ptr2ppt(cur->value, 0);
+	*nameptr = cur->name;
+	*valueptr = cur->value;
 
 	listnext = cur->next;
 	return Success;
@@ -467,7 +479,7 @@ static Errcode po_gvar_next(Popot nameptr, Popot valueptr)
 /*****************************************************************************
  *
  ****************************************************************************/
-static Errcode po_gvar_first(Popot nameptr, Popot valueptr)
+static Errcode po_gvar_first(char** nameptr, char** valueptr)
 {
 	Errcode err;
 

@@ -24,7 +24,7 @@ static Errcode find_newc(int usedc, int freec, Rgb3 *ctab, int threshold,
 	long	new;
 	int 	dif;
 
-	poeprintf(3,12,ptr2ppt("Packing %6ld colors to %4d threshold %4d",0),
+	poeprintf("Packing %6ld colors to %4d threshold %4d",
 			lscount-usedc, freec, threshold);
 
 	new = 0;

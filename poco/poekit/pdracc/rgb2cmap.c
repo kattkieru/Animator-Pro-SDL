@@ -121,7 +121,7 @@ static Errcode make_color_palette(Image_file *ifile, Anim_info *ainfo,
 				goto OUT;
 			}
 			progress = 20;
-			poeprintf(1,4,hist_progress,y);
+			poeprintf(hist_progress.pt, y);
 		}
 		++y;						// used only for progress reporting
 
@@ -135,7 +135,7 @@ static Errcode make_color_palette(Image_file *ifile, Anim_info *ainfo,
 	 * ctab (array of Rgb3) contains all those colors, then do color packing.
 	 *----------------------------------------------------------------------*/
 
-	poeprintf(0,0,ptr2ppt("Converting histogram to color map...",0));
+	poeprintf("Converting histogram to color map...");
 
 	ccount = cc_hist_color_count();
 

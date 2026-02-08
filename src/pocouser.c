@@ -27,8 +27,8 @@ extern void disp_line_alot(Short_xy* v);
 void cleanup_toptext();
 Errcode po_poly_to_arrays(Poly* p, Popot* x, Popot* y);
 Errcode po_arrays_to_poly(Poly* p, int ptcount, Popot* px, Popot* py);
-extern bool po_UdSlider(long vargcount, long vargsize, Popot inum, int min, int max, Popot update,
-						Popot data, Popot pofmt, ...);
+extern bool po_UdSlider(int* inum, int min, int max, void* update,
+						void* data, char* fmt, ...);
 
 extern void full_screen_edit(Text_file* gf);  // from qpocoed.c
 
@@ -91,21 +91,20 @@ bool po_set_abortable(bool abort)
  *	 note that this routine only handles setting the vector; actual abort
  *	 handling is in po_check_abort, below.
  ****************************************************************************/
-void po_set_abort_handler(Popot abort_handler, Popot abort_data)
+void po_set_abort_handler(void* abort_handler, void* abort_data)
 {
-	void* fuf;
-
-	if (NULL == (fuf = abort_handler.pt)) {
+	if (abort_handler == NULL) {
 		abort_control.abort_handler = NULL;
 		return;
 	}
 
-	if (NULL == (abort_control.abort_handler = po_fuf_code(fuf))) {
+	if (NULL == (abort_control.abort_handler = po_fuf_code(abort_handler))) {
 		builtin_err = Err_function_not_found;
 		return;
 	}
 
-	abort_control.abort_data = abort_data;
+	Popot_make_null(&abort_control.abort_data);
+	abort_control.abort_data.pt = abort_data;
 	return;
 }
 
@@ -368,13 +367,12 @@ static bool po_rub_circle(int* x, int* y, int* rad)
  * int RubPoly(int **x, int **y)
  * returns # of points or negative Errcode
  ****************************************************************************/
-static int po_rub_poly(Popot pxlist, Popot pylist)
+static int po_rub_poly(Popot* px, Popot* py)
 {
 	Poly p;
 	Errcode err;
-	Popot *px, *py;
 
-	if ((px = pxlist.pt) == NULL || (py = pylist.pt) == NULL) {
+	if (px == NULL || py == NULL) {
 		return (builtin_err = Err_null_ref);
 	}
 	wait_wndo_input(ANY_CLICK);
@@ -423,18 +421,16 @@ static bool po_drag_box(int* x, int* y, int* w, int* h)
 /*****************************************************************************
  * int printf(char *format, ...)
  ****************************************************************************/
-static int po_ttextf(long vargcount, long vargsize, Popot pofmt, ...)
+static int po_ttextf(char* fmt, ...)
 {
 	va_list args;
 	int rv;
 
-	va_start(args, pofmt);
-
-	if (Success > po_check_formatf(TTEXTF_MAXCHARS, vargcount, vargsize, pofmt.pt, args)) {
-		return builtin_err;
+	va_start(args, fmt);
+	if (fmt == NULL) {
+		fmt = "";
 	}
-
-	rv = ttextf(pofmt.pt, args, NULL);
+	rv = ttextf(fmt, args, NULL);
 	va_end(args);
 	return rv;
 }
@@ -442,25 +438,19 @@ static int po_ttextf(long vargcount, long vargsize, Popot pofmt, ...)
 /*****************************************************************************
  * ErrCode Qerror(ErrCode err, char *format, ...)
  ****************************************************************************/
-static Errcode po_ErrBox(long vargcount, long vargsize, Errcode err, Popot pofmt, ...)
+static Errcode po_ErrBox(Errcode err, char* fmt, ...)
 {
 	char etext[ERRTEXT_SIZE];
 	va_list args;
-	char* fmt;
 	bool mouse_was_on;
 
 	if (!get_errtext(err, etext)) {
 		return (err);
 	}
 
-	va_start(args, pofmt);
-
-	if ((fmt = pofmt.pt) == NULL) {
+	va_start(args, fmt);
+	if (fmt == NULL) {
 		fmt = "";
-	} else {
-		if (Success > po_check_formatf(0, vargcount, vargsize, fmt, args)) {
-			return builtin_err;
-		}
 	}
 
 	mouse_was_on = show_mouse();
@@ -475,17 +465,17 @@ static Errcode po_ErrBox(long vargcount, long vargsize, Errcode err, Popot pofmt
 /*****************************************************************************
  * void Qtext(char *format, ...)
  ****************************************************************************/
-static void po_TextBox(long vargcount, long vargsize, Popot pofmt, ...)
+static void po_TextBox(char* fmt, ...)
 {
 	va_list args;
-	char* fmt;
 	bool mouse_was_on;
 
-	va_start(args, pofmt);
-
-	fmt = pofmt.pt;
-	if (Success > po_check_formatf(0, vargcount, vargsize, fmt, args)) {
-		return;
+// #region agent log
+{FILE*_df=fopen("/Users/kiki/dev/animatorpro/.cursor/debug.log","a");if(_df){fprintf(_df,"{\"hypothesisId\":\"H15\",\"location\":\"pocouser.c:po_TextBox\",\"message\":\"Qtext entry\",\"data\":{\"fmt\":\"%p\",\"fmt_str\":\"%.80s\"}}\n",(void*)fmt,fmt?fmt:"NULL");fclose(_df);}}
+// #endregion
+	va_start(args, fmt);
+	if (fmt == NULL) {
+		fmt = "";
 	}
 	mouse_was_on = show_mouse();
 	varg_continu_box(NULL, fmt, args, NULL);
@@ -498,20 +488,18 @@ static void po_TextBox(long vargcount, long vargsize, Popot pofmt, ...)
 /*****************************************************************************
  * bool Qquestion(char *question, ...)
  ****************************************************************************/
-static bool po_YesNo(long vargcount, long vargsize, Popot question, ...)
+static bool po_YesNo(char* question, ...)
 {
 	va_list args;
-	char* fmt;
 	bool rv;
 	bool mouse_was_on;
 
 	va_start(args, question);
-	fmt = question.pt;
-	if (Success > po_check_formatf(0, vargcount, vargsize, fmt, args)) {
-		return builtin_err;
+	if (question == NULL) {
+		question = "";
 	}
 	mouse_was_on = show_mouse();
-	rv = varg_yes_no_box(NULL, fmt, args);
+	rv = varg_yes_no_box(NULL, question, args);
 	if (!mouse_was_on) {
 		hide_mouse();
 	}
@@ -580,12 +568,11 @@ static Errcode popot_to_pt(Popot* ppp, void** cc, int count)
 /*****************************************************************************
  * int Qchoice(char **buttons, int bcount, char *header, ...)
  ****************************************************************************/
-static Errcode po_ChoiceBox(long vargcount, long vargsize, Popot pchoices, int ccount, Popot pfmt,
-							...)
+static Errcode po_ChoiceBox(Popot* pchoices, int ccount, char* fmt, ...)
 {
 	va_list args;
 	char* choices[TBOX_MAXCHOICES + 1];
-	char* fmt;
+	int i;
 	Errcode rv;
 	bool mouse_was_on;
 
@@ -595,15 +582,19 @@ static Errcode po_ChoiceBox(long vargcount, long vargsize, Popot pchoices, int c
 	}
 
 	/* Transfer button strings into NULL-terminated list of C pointers */
-	if ((builtin_err = popot_to_pt(&pchoices, choices, ccount)) < Success) {
-		return (builtin_err);
+	if (pchoices == NULL) {
+		return (builtin_err = Err_null_ref);
+	}
+	for (i = 0; i < ccount; ++i) {
+		if (NULL == (choices[i] = pchoices[i].pt)) {
+			return (builtin_err = Err_null_ref);
+		}
 	}
 	choices[ccount] = NULL;
 
-	va_start(args, pfmt);
-	fmt = pfmt.pt;
-	if (Success > po_check_formatf(0, vargcount, vargsize, fmt, args)) {
-		return builtin_err;
+	va_start(args, fmt);
+	if (fmt == NULL) {
+		fmt = "";
 	}
 	mouse_was_on = show_mouse();
 	rv = tboxf_choice(icb.input_screen, NULL, fmt, args, choices, NULL);
@@ -618,76 +609,71 @@ static Errcode po_ChoiceBox(long vargcount, long vargsize, Popot pchoices, int c
  * bool Qfile(char *suffix, char *button,
  *	  char *inpath, char *outpath, bool force_suffix, char *header)
  ****************************************************************************/
-static bool po_FileMenu(Popot suffix, Popot button, Popot inpath, Popot outpath, int force_suffix,
-						Popot prompt)
+static bool po_FileMenu(char* suffix, char* button, char* inpath, char* outpath, int force_suffix,
+						char* prompt)
 {
 	bool rv = true;
 	bool mouse_was_on;
 	char titbuf[40];
 
-	if (prompt.pt == NULL || 0 == strlen(prompt.pt)) {
-		prompt.pt = stack_string("poco_qfile", titbuf);
+	if (prompt == NULL || 0 == strlen(prompt)) {
+		prompt = stack_string("poco_qfile", titbuf);
 	}
 
-	if (suffix.pt == NULL || 0 == strlen(suffix.pt) || '.' != *(char*)(suffix.pt)) {
+	if (suffix == NULL || 0 == strlen(suffix) || '.' != *suffix) {
 		force_suffix = false;
-		suffix.pt = ".*";
+		suffix = ".*";
 	}
 
-	if (button.pt == NULL || 0 == strlen(button.pt)) {
-		button.pt = ok_str;
+	if (button == NULL || 0 == strlen(button)) {
+		button = ok_str;
 	}
 
-	if (inpath.pt == NULL) {
+	if (inpath == NULL || outpath == NULL) {
 		builtin_err = Err_null_ref;
-		goto ERR;
-	}
-
-	if (Popot_bufcheck(&outpath, PATH_SIZE) < Success) {
-		goto ERR;
+		return false;
 	}
 
 	mouse_was_on = show_mouse();
-	if (NULL == (outpath.pt = pj_get_filename(prompt.pt, suffix.pt, button.pt, inpath.pt,
-											  outpath.pt, force_suffix, NULL, NULL))) {
+	if (NULL == pj_get_filename(prompt, suffix, button, inpath,
+								outpath, force_suffix, NULL, NULL)) {
 		rv = false;
 	}
 	if (!mouse_was_on) {
 		hide_mouse();
 	}
 
-ERR:
 	return rv;
 }
 
 /*****************************************************************************
  * bool Qstring(char *string, int size, char *header)
  ****************************************************************************/
-static bool po_qstring(Popot strbuf, int bufsize, Popot hailing)
+static bool po_qstring(char* strbuf, int bufsize, char* hailing)
 {
 	bool rv;
 	bool mouse_was_on;
 
-	if (hailing.pt == NULL) {
-		hailing.pt = "";
+	if (hailing == NULL) {
+		hailing = "";
+	}
+	if (strbuf == NULL) {
+		builtin_err = Err_null_ref;
+		return false;
 	}
 	if (bufsize < 2) {
 		builtin_err = Err_buf_too_small;
 		return (false);
 	}
 	mouse_was_on = show_mouse();
-	if (Popot_bufcheck(&strbuf, bufsize) >= Success) {
-		rv = qreq_string(strbuf.pt, bufsize - 1, "%s", hailing.pt);
-	} else {
-		rv = false;
-	}
+	rv = qreq_string(strbuf, bufsize - 1, "%s", hailing);
 	if (!mouse_was_on) {
 		hide_mouse();
 	}
 	return rv;
 }
 
-static int po_some_choice(Popot pchoices, int ccount, USHORT* flags, Popot header)
+static int po_some_choice(Popot* pchoices, int ccount, USHORT* flags, char* header)
 {
 #define CMAX 10
 #define CHMAX 60
@@ -698,11 +684,16 @@ static int po_some_choice(Popot pchoices, int ccount, USHORT* flags, Popot heade
 	if (ccount < 0 || ccount > CMAX) {
 		return (builtin_err = Err_parameter_range);
 	}
-	if (header.pt == NULL) {
-		header.pt = "";
+	if (header == NULL) {
+		header = "";
 	}
-	if ((builtin_err = popot_to_pt(&pchoices, pbuf, ccount)) < Success) {
-		return (builtin_err);
+	if (pchoices == NULL) {
+		return (builtin_err = Err_null_ref);
+	}
+	for (i = 0; i < ccount; ++i) {
+		if (NULL == (pbuf[i] = pchoices[i].pt)) {
+			return (builtin_err = Err_null_ref);
+		}
 	}
 	for (i = 0; i < ccount; i++) {
 		if (strlen(pbuf[i]) > CHMAX) {
@@ -710,7 +701,7 @@ static int po_some_choice(Popot pchoices, int ccount, USHORT* flags, Popot heade
 		}
 	}
 	mouse_was_on = show_mouse();
-	i = qchoice(flags, header.pt, pbuf, ccount);
+	i = qchoice(flags, header, pbuf, ccount);
 	if (!mouse_was_on) {
 		hide_mouse();
 	}
@@ -725,7 +716,7 @@ static int po_some_choice(Popot pchoices, int ccount, USHORT* flags, Popot heade
 /*****************************************************************************
  * int Qmenu(char **choices, int ccount, char *header)
  ****************************************************************************/
-static int po_qmenu(Popot pchoices, int ccount, Popot header)
+static int po_qmenu(Popot* pchoices, int ccount, char* header)
 {
 	return po_some_choice(pchoices, ccount, NULL, header);
 }
@@ -733,15 +724,12 @@ static int po_qmenu(Popot pchoices, int ccount, Popot header)
 /*****************************************************************************
  *int  QmenuWithFlags(char **choices, int ccount, short *flags, char *header)
  ****************************************************************************/
-static int po_qmenu_with_flags(Popot pchoices, int ccount, Popot pflags, Popot header)
+static int po_qmenu_with_flags(Popot* pchoices, int ccount, short* pflags, char* header)
 {
 	int i;
 	USHORT save;
-	USHORT* flags;
-	if ((flags = pflags.pt) != NULL) {
-		if (Popot_bufcheck(&pflags, ccount * sizeof(USHORT)) < Success) {
-			return builtin_err;
-		}
+	USHORT* flags = (USHORT*)pflags;
+	if (flags != NULL) {
 		/* Rotate flags around to make indexes match the return choice value.
 		 * That is put "cancel" at zero. */
 		save = flags[0];
@@ -756,24 +744,20 @@ static int po_qmenu_with_flags(Popot pchoices, int ccount, Popot pflags, Popot h
 /*****************************************************************************
  * convert a poco char *names[]  array to a Names list
  ****************************************************************************/
-static Errcode popot_to_names(Popot* ppnames, int pcount, Names** pnames)
+static Errcode popot_to_names(Popot* pp, int pcount, Names** pnames)
 {
 	void* s;
-	Popot* pp;
 	int i;
 	Errcode err;
 	Names* names = NULL;
 	Names* new;
 
-	if ((pp = ppnames->pt) == NULL) {
+	if (pp == NULL) {
 		err = Err_null_ref;
 		goto ERR;
 	}
-	if (Popot_bufsize(ppnames) < pcount * sizeof(Popot)) {
-		return (Err_index_big);
-	}
 	for (i = 0; i < pcount; i++) {
-		if ((s = pp->pt) == NULL) {
+		if ((s = pp[i].pt) == NULL) {
 			err = Err_null_ref;
 			goto ERR;
 		}
@@ -784,7 +768,6 @@ static Errcode popot_to_names(Popot* ppnames, int pcount, Names** pnames)
 		new->name = s;
 		new->next = names;
 		names = new;
-		pp += 1;
 	}
 	*pnames = reverse_slist(names);
 	return (Success);
@@ -799,8 +782,8 @@ ERR:
  * bool Qlist(char *choicestr, int *choice,
  *	 char **items, int icount, int *ipos, char *header)
  ****************************************************************************/
-static bool po_Qlist(Popot choice_str, Popot choice_ix, Popot items, int icount, Popot ipos,
-					 Popot header)
+static bool po_Qlist(char* choice_str, int* choice_ix, Popot* items, int icount, int* ipos,
+					 char* header)
 {
 	Names* nlist = NULL;
 	Names* nsel;
@@ -811,44 +794,41 @@ static bool po_Qlist(Popot choice_str, Popot choice_ix, Popot items, int icount,
 	int maxchars;
 	bool mouse_was_on;
 
-	if (choice_ix.pt == NULL) {
+	if (choice_ix == NULL) {
 		builtin_err = Err_null_ref;
 		goto OUT;
 	}
-	if (ipos.pt != NULL) {
-		ipo = *((int*)(ipos.pt));
+	if (ipos != NULL) {
+		ipo = *ipos;
 	}
-	if (header.pt == NULL) {
-		header.pt = "";
+	if (header == NULL) {
+		header = "";
 	}
-	if ((builtin_err = popot_to_names(&items, icount, &nlist)) < Success) {
+	if ((builtin_err = popot_to_names(items, icount, &nlist)) < Success) {
 		goto OUT;
 	}
 	maxchars = longest_name(nlist) + 1;
 
-	if (choice_str.pt == NULL) {
+	if (choice_str == NULL) {
 		if ((retbuf = pj_zalloc(maxchars)) == NULL) {
 			builtin_err = Err_no_memory;
 			goto OUT;
 		}
 		retbuf_allocated = true;
 	} else {
-		if (Popot_bufcheck(&choice_str, maxchars) < Success) {
-			goto OUT;
-		}
-		retbuf = choice_str.pt;
+		retbuf = choice_str;
 	}
 
 	mouse_was_on = show_mouse();
-	if ((ret = qscroller(retbuf, header.pt, nlist, 10, &ipo)) != 0) {
+	if ((ret = qscroller(retbuf, header, nlist, 10, &ipo)) != 0) {
 		nsel = name_in_list(retbuf, nlist);
-		*((int*)(choice_ix.pt)) = slist_ix(nlist, nsel);
+		*choice_ix = slist_ix(nlist, nsel);
 	}
 	if (!mouse_was_on) {
 		hide_mouse();
 	}
-	if (ipos.pt != NULL) {
-		*((int*)(ipos.pt)) = ipo;
+	if (ipos != NULL) {
+		*ipos = ipo;
 	}
 OUT:
 	free_wild_list(&nlist);
@@ -878,36 +858,35 @@ static bool remember_info_btn(Names* which, void* data)
 /*****************************************************************************
  * bool Qscroll(int *choice, char **items, int icount, int *ipos, char *hdr)
  ****************************************************************************/
-static int po_Qscroll(Popot choice_ix, Popot items, int icount, Popot ipos, Popot button_texts,
-					  Popot header)
+static int po_Qscroll(int* choice_ix, Popot* items, int icount, int* ipos, Popot* button_texts,
+					  char* header)
 {
 	Names* nlist = NULL;
 	Names* cursel;
 	char* btexts[3];
 	char** usebtexts;
-	Popot* pptbtexts;
 	short ipo = -1;
 	int ret;
 	int maxchars;
 	bool mouse_was_on;
 	void* use_info_btn;  // lazy, lazy
 
-	if (choice_ix.pt == NULL) {
+	if (choice_ix == NULL) {
 		builtin_err = Err_null_ref;
 		goto OUT;
 	}
 
-	if (header.pt == NULL) {
-		header.pt = "";
+	if (header == NULL) {
+		header = "";
 	}
 
-	if ((builtin_err = popot_to_names(&items, icount, &nlist)) < Success) {
+	if ((builtin_err = popot_to_names(items, icount, &nlist)) < Success) {
 		goto OUT;
 	}
 	maxchars = longest_name(nlist) + 1;
 
-	if (ipos.pt != NULL) {
-		ipo = *((int*)(ipos.pt));
+	if (ipos != NULL) {
+		ipo = *ipos;
 	}
 	if (ipo < 0) {
 		cursel = NULL;
@@ -915,20 +894,15 @@ static int po_Qscroll(Popot choice_ix, Popot items, int icount, Popot ipos, Popo
 		cursel = slist_el(nlist, ipo);
 	}
 
-	if (button_texts.pt == NULL) {
+	if (button_texts == NULL) {
 		usebtexts = NULL;
 	} else {
-		if (Popot_bufsize(&button_texts) < 3 * sizeof(Popot)) {
-			builtin_err = Err_index_big;
-			goto OUT;
-		}
 		usebtexts = btexts;
-		pptbtexts = button_texts.pt;
-		if ((NULL == (btexts[0] = pptbtexts[0].pt)) || (NULL == (btexts[2] = pptbtexts[2].pt))) {
+		if ((NULL == (btexts[0] = button_texts[0].pt)) || (NULL == (btexts[2] = button_texts[2].pt))) {
 			builtin_err = Err_null_ref;
 			goto OUT;
 		}
-		if (NULL == (btexts[1] = pptbtexts[1].pt)) {
+		if (NULL == (btexts[1] = button_texts[1].pt)) {
 			btexts[1] = "";
 		}
 	}
@@ -942,20 +916,20 @@ static int po_Qscroll(Popot choice_ix, Popot items, int icount, Popot ipos, Popo
 	lastbtn = 0;
 	lastsel = NULL;
 	mouse_was_on = show_mouse();
-	ret = go_driver_scroller(header.pt, nlist, cursel, remember_ok_btn, use_info_btn, NULL,
+	ret = go_driver_scroller(header, nlist, cursel, remember_ok_btn, use_info_btn, NULL,
 							 usebtexts);
 	if (!mouse_was_on) {
 		hide_mouse();
 	}
 
-	*((int*)(choice_ix.pt)) = ipo = slist_ix(nlist, lastsel);
+	*choice_ix = ipo = slist_ix(nlist, lastsel);
 
 	if (ret >= Success) {
 		ret = lastbtn;
 	}
 
-	if (ipos.pt != NULL) {
-		*((int*)(ipos.pt)) = ipo;
+	if (ipos != NULL) {
+		*ipos = ipo;
 	}
 OUT:
 	free_wild_list(&nlist);
@@ -966,7 +940,7 @@ OUT:
  * Check that the cursor-position and top-line-in-text-window pointers are
  * good,  and call the text editor.  Returns error or size of text.
  ****************************************************************************/
-static int position_cursor_and_edit(Text_file* gf, Popot* pop_cursor_position, Popot* pop_top_line)
+static int position_cursor_and_edit(Text_file* gf, int* cursor_position, int* top_line)
 {
 	static int stop_line, scursor_position;
 	int* pcursor_position;
@@ -974,12 +948,8 @@ static int position_cursor_and_edit(Text_file* gf, Popot* pop_cursor_position, P
 
 	/* Set cursor & top line in window position to be the what they pass in
 	 * or if they pass in NULL just whatever it last was. */
-	if ((pcursor_position = pop_cursor_position->pt) == NULL) {
-		pcursor_position = &scursor_position;
-	}
-	if ((ptop_line = pop_top_line->pt) == NULL) {
-		ptop_line = &stop_line;
-	}
+	pcursor_position = (cursor_position != NULL) ? cursor_position : &scursor_position;
+	ptop_line = (top_line != NULL) ? top_line : &stop_line;
 
 	gf->text_yoff = *ptop_line;
 	gf->tcursor_p = *pcursor_position;
@@ -996,40 +966,37 @@ static int position_cursor_and_edit(Text_file* gf, Popot* pop_cursor_position, P
  * if they need to edit an 8 character file name make max_size 10.)
  * It's ok for cursor_position and top_line to be NULL.
  ****************************************************************************/
-static int po_edit(Popot ptext, int max_size, Popot pop_cursor_position, Popot pop_top_line)
+static int po_edit(char* text, int max_size, int* cursor_position, int* top_line)
 {
-	int size;
 	Text_file tf;
 
-	if (Popot_bufcheck(&ptext, max_size) < Success) {
-		return builtin_err;
+	if (text == NULL) {
+		return (builtin_err = Err_null_ref);
 	}
 	clear_struct(&tf);
 	tf.text_alloc = max_size;
-	tf.text_buf = ptext.pt;
+	tf.text_buf = text;
 	tf.text_size = strlen(tf.text_buf);
-	return position_cursor_and_edit(&tf, &pop_cursor_position, &pop_top_line);
+	return position_cursor_and_edit(&tf, cursor_position, top_line);
 }
 
 /*****************************************************************************
  * int QeditFile(char *file_name, int *cursor_position, int *top_line);
  *		Read in a file, edit it, and write it back out.
  ****************************************************************************/
-static int po_edit_file(Popot pop_file_name, Popot pop_cursor_position, Popot pop_top_line)
+static int po_edit_file(char* file_name, int* cursor_position, int* top_line)
 {
-	char* file_name;
 	Text_file tf;
 	int size;
 	Errcode err;
 
-	/* Make sure that all the parameters are good. */
-	if ((file_name = pop_file_name.pt) == NULL) {
+	if (file_name == NULL) {
 		return (builtin_err = Err_null_ref);
 	}
 
 	clear_struct(&tf);
 	load_text_file(&tf, file_name);
-	size = position_cursor_and_edit(&tf, &pop_cursor_position, &pop_top_line);
+	size = position_cursor_and_edit(&tf, cursor_position, top_line);
 	if ((err = save_text_file(&tf)) < Success) {
 		size = err;
 	}

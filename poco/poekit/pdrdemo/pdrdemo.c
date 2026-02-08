@@ -168,7 +168,7 @@ Errcode say_fatal(char *errmsg)
  ****************************************************************************/
 {
 	if (!isbatch)
-		poeQtext(0,0,array2ppt(errmsg));
+		poeQtext(errmsg);
 	return builtin_err = Err_nogood;
 }
 
@@ -254,7 +254,7 @@ static Errcode do_qchoice(char *optstr, UBYTE curvalue, Boolean force_dialog)
 
 	choices[numchoices-1] = (force_dialog) ? clearppt : cancelppt;
 
-	thechoice = poeQmenu(ptr2ppt(choices,10*sizeof(Popot)), numchoices, prompt);
+	thechoice = poeQmenu(choices, numchoices, prompt.pt);
 	if (builtin_err)
 		return builtin_err;
 
@@ -367,7 +367,7 @@ static int opt_rgb_get(Boolean force_dialog)
 
 		*((char *)(choices[RGB_DODITHER].pt)) = (do_dither) ? '*' : ' ';
 
-		thechoice = poeQmenu(pchoices, Array_els(choices), prompt);
+		thechoice = poeQmenu(choices, Array_els(choices), prompt.pt);
 		if (builtin_err)
 			return builtin_err;
 

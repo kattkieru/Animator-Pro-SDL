@@ -16,6 +16,9 @@
 extern bool po_check_abort(void* data);
 extern Errcode clone_ppoints(Poly* s, Poly* d); // from polytool.c
 
+/* Forward declarations for hostlib wiring (see get_poco_libs) */
+extern Hostlib _a_a_pocolib; /* from animhost/hostlib_table.c */
+extern Porexlib aa_pocolib;  /* defined later in this file */
 
 static Poco_lib* poco_libs[] = {
 	&po_user_lib,  &po_draw_lib,  &po_text_lib,     &po_mode_lib, &po_turtle_lib, &po_time_lib,
@@ -33,6 +36,12 @@ Poco_lib* get_poco_libs()
 	int i;
 
 	if (list == NULL) {
+		/* Wire the hostlib chain so POE modules can access host functions
+		 * via _plptr (which dereferences _a_a_pocolib.next as Porexlib*).
+		 * Without this, _a_a_pocolib.next stays NULL and any POE module
+		 * that calls GetPicScreen(), poePicDirtied(), etc. will segfault. */
+		_a_a_pocolib.next = &aa_pocolib;
+
 		for (i = Array_els(poco_libs); --i >= 0;) {
 			poco_libs[i]->next = list;
 			list = poco_libs[i];

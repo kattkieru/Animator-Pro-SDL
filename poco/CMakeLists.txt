@@ -94,8 +94,9 @@ endif()
 
 INSTALL(TARGETS poco DESTINATION ./)
 
-# Add poekit subdirectory (for POE modules)
-add_subdirectory(poekit)
+# NOTE: poekit (POE modules) is added from the root CMakeLists.txt
+# AFTER src's resource directory install, so native .poe files are not
+# overwritten by the resource directory copy.
 
 # Add test subdirectory
 add_subdirectory(test)
