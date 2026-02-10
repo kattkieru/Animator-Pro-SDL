@@ -6,11 +6,7 @@
  **
  **/
 
-#pragma poco library "pdracces.poe"     // extended picture I/O library
 #include <errcodes.h>
-
-#define NO_DIALOG 0 // Parameter to pdraccess options routine
-#define DO_DIALOG 1 // Parameter to pdraccess options routine
 
 /*----------------------------------------------------------------------------
  * dialog strings, menu choices, etc...
@@ -53,16 +49,16 @@ enum {LOAD_APPEND=1, LOAD_INSERT, LOAD_REPLACE, LOAD_CANCEL};
 
 
 char pdr_prompt[]	= "Please select output format:";
-char *pdr_choices[] = {"GIF", "PCX", "TIFF", "Targa", "Macintosh Pict",
+char *pdr_choices[] = {"GIF", "PNG", "JPEG", "PCX",
 "Windows Bitmap",  "Cancel"};
-char *pdr_names[]	= {"GIF.PDR", "PCX.PDR", "TIFF.PDR", "TARGA.PDR", 
-	"PICT.PDR", "BMP.PDR"};
-char *pdr_suffixes[] = {".GIF", ".PCX", ".TIF", ".TGA", ".PCT", ".BMP"};
+char *pdr_names[]	= {"GIF.PDR", "PNG.PDR", "JPEG.PDR", "PCX.PDR",
+	"BMP.PDR"};
+char *pdr_suffixes[] = {".GIF", ".PNG", ".JPG", ".PCX", ".BMP"};
 
-char *start_of_final_digits(char *pt)
 /***********************************************************************
  *	returns pointer to the start of the ending number in the string.
  ***********************************************************************/
+char *start_of_final_digits(char *pt)
 {
 	char c;
 	int  len;
@@ -79,14 +75,17 @@ char *start_of_final_digits(char *pt)
 }
 
 
-int get_num_name(char *name)
 /***********************************************************************
  * Return the number embedded in the "file" portion of a file-name
  * (as opposed to the directory or the suffix.)  Return -1 if none.
  ***********************************************************************/
+int get_num_name(char *name)
 {
 	char *pt;
 	char dev[4],dir[70],file[10],suff[5];
+
+	if (name == NULL || *name == '\0')
+		return(-1);
 
 	fnsplit(name,dev,dir,file,suff);
 	if ((pt = start_of_final_digits(file)) == file)
@@ -94,10 +93,10 @@ int get_num_name(char *name)
 	return(atoi(pt));
 }
 
-int count_digits(int num)
 /***********************************************************************
  * Return number of digits (base 10) in number.
  ***********************************************************************/
+int count_digits(int num)
 {
 	int digits = 1;
 
@@ -108,7 +107,6 @@ int count_digits(int num)
 	return(digits);
 }
 
-void make_num_name(char *buf, char *name, int num, int digits)
 /***********************************************************************
  * Given a full file name (device, path, file, suffix), a number,
  * and a minimum count of digits,  make a name with the number
@@ -122,11 +120,18 @@ void make_num_name(char *buf, char *name, int num, int digits)
  *		make_num_name(buf, "c:\pics\sample.gif", 16, 3)
  * leaves "c:\pics\sampl016.gif" in buf.
  ***********************************************************************/
+void make_num_name(char *buf, char *name, int num, int digits)
 {
 	char dev[4],dir[70],file[10],suff[5];
 	char nfile[10];
 	int  diglen;
 	char *pt;
+
+	if (buf == NULL || name == NULL || *name == '\0') {
+		if (buf != NULL)
+			*buf = '\0';
+		return;
+	}
 
 	fnsplit(name,dev,dir,file,suff);	// split file into component parts
 	if (count_digits(num)>digits)		// if number too big override digits
@@ -143,46 +148,39 @@ void make_num_name(char *buf, char *name, int num, int digits)
 	fnmerge(buf,dev,dir,nfile,suff);
 }
 
-ErrCode set_up_for_output(char *name)
 /***********************************************************************
  * find and load the pdr to handle the output format, get output options.
  * we try to figure out the pdr name from the basename filetype, but
  * if that doesn't work (eg, if there is no suffix on the basename),
  * we prompt the user for the output format using Qmenu.
- * after a pdr is loaded to handle the output, we check whether output
- * options are supported by the pdr, and if so, we call the pdr's
- * options preset dialog.
  **********************************************************************/
+ErrCode set_up_for_output(char *name)
 {
 	ErrCode err;
 	int 	thechoice;
 	char	*pdrname;
-	char dev[4],dir[70],file[10],suff[5];
 
-	if (Success > (err = PicDriverFindLoad(name))) {
+	if (name == NULL || *name == '\0') {
+		return Qerror(Err_null_ref, "No filename specified");
+	}
+
+	if (Success > (err = PicDriverDetect(name))) {
 		thechoice = Qmenu(pdr_choices, Array_els(pdr_choices), pdr_prompt);
 		if (--thechoice < 0)	// convert choice # to array index,
 			return Err_abort;	// if < 0, user picked Cancel or right-clicked
-		if (Success > (err = PicDriverLoad(pdr_names[thechoice]))) {
-			return Qerror(err, "Cannot load picture driver %s",pdr_names[thechoice]);
+		if (Success > (err = PicDriverSet(pdr_names[thechoice]))) {
+			return Qerror(err, "Cannot find picture driver %s",pdr_names[thechoice]);
 		}
-		/* If they've picked a driver from list, force suffix to match. */
-		fnsplit(name,dev,dir,file,suff);	// split file into component parts
-		fnmerge(name,dev,dir,file,pdr_suffixes[thechoice]);
-	}
-
-	if (PicPdrHasOptions()) {
-		if (Success > (err = PicPdrOptionsPreset(DO_DIALOG, 0)))
-			return err;
+		/* User selected format manually - PDR is now set */
 	}
 
 	return Success;
 }
 
-void save_pics(char *name)
 /***********************************************************************
  * Save one picture for each frame in current flic.
  ***********************************************************************/
+void save_pics(char *name)
 {
 	int 	i;
 	int 	count;
@@ -220,10 +218,10 @@ void save_pics(char *name)
 	unprintf(); // Get rid of status line
 }
 
-Boolean fexists(char *name)
 /***********************************************************************
  * See whether a file exists.
  ***********************************************************************/
+Boolean fexists(char *name)
 {
 	FILE *f;
 
@@ -235,11 +233,11 @@ Boolean fexists(char *name)
 		return FALSE;
 }
 
-int count_files(char *base_name)
 /***********************************************************************
  * Count up the number of files starting at base_name and
  * numbered sequentially.
  ***********************************************************************/
+int count_files(char *base_name)
 {
 	char nbuf[PATH_SIZE];
 	int  count = 0;
@@ -255,10 +253,10 @@ int count_files(char *base_name)
 	return count;
 }
 
-Boolean report_about_error(ErrCode err, char *name, int cur_pos, int total)
 /***********************************************************************
  * Tell user had error and ask if want to continue.
  ***********************************************************************/
+Boolean report_about_error(ErrCode err, char *name, int cur_pos, int total)
 {
 	int temp;
 
@@ -272,10 +270,10 @@ Boolean report_about_error(ErrCode err, char *name, int cur_pos, int total)
 	return TRUE;
 }
 
-void load_pics(char *base_name)
 /***********************************************************************
  * Load up a bunch of consecutively numbered files into the flic.
  ***********************************************************************/
+void load_pics(char *base_name)
 {
 	int 	i;
 	int 	count;
@@ -334,15 +332,6 @@ void load_pics(char *base_name)
 			return; 	// User selected Cancel or right-clicked
 	}
 
-// If rgb/truecolor data was found in the picture, ask the user for the
-// rgb processing option via the pdracces preset dialog.  The choosen
-// option will remain in effect throughout the load sequence.
-
-	if (picdepth > 8) {
-		if (Success > (err = PicRgbOptionsPreset(DO_DIALOG,0)))
-			return;
-	}
-
 	curframe = 1+GetFrame();
 
 // Load the pictures...
@@ -363,12 +352,11 @@ void load_pics(char *base_name)
 	unprintf(); 		// all done, get rid of top status info line
 }
 
-void load_pic_list(char **list,  int count)
 /***********************************************************************
  * Load a list of files into flic.
  ***********************************************************************/
+void load_pic_list(char **list,  int count)
 {
-	Boolean got_rgb = FALSE;
 	char *name;
 	int	picw, pich, picdepth;
 	int i;
@@ -385,13 +373,6 @@ void load_pic_list(char **list,  int count)
 			if (!report_about_error(err, name, i, count))
 				return;
 		} else {
-			/* If RGB (and haven't already) then query how to handle
-			 * color reduction. */
-			if (picdepth > 8 && !got_rgb) {
-				if (Success > (err = PicRgbOptionsPreset(DO_DIALOG,0)))
-					return;
-				got_rgb = TRUE;
-			}
 			if (Success > (err = PicLoad(name,NULL))) {
 				Qerror(err, "Cannot load %s", name);
 				if (!report_about_error(err, name, i, count))
@@ -402,10 +383,10 @@ void load_pic_list(char **list,  int count)
 	}
 }
 
-void load_dir(char *base_name)
 /***********************************************************************
  * Load a whole directory into flic.
  ***********************************************************************/
+void load_dir(char *base_name)
 {
 	char dev[4],dir[70],file[10],suff[5];
 	char wild[10];
@@ -413,6 +394,8 @@ void load_dir(char *base_name)
 	char **file_list;
 	int file_count;
 
+	if (base_name == NULL || *base_name == '\0')
+		return;
 
 	fnsplit(base_name, dev, dir, file, suff);
 	fnmerge(base_name, dev, dir, "", "");
@@ -428,10 +411,10 @@ void load_dir(char *base_name)
 	SetDir(old_dir);
 }
 
-void delete_files(char *base_name)
 /***********************************************************************
  * Delete a bunch of consecutively numbered files.
  ***********************************************************************/
+void delete_files(char *base_name)
 {
 	char nbuf[PATH_SIZE];
 	int  count;
@@ -458,11 +441,11 @@ void delete_files(char *base_name)
 		}
 }
 
-Boolean do_one_set(char *base_name)
 /**********************************************************************
  * Put up main program menu and respond to choices.  Return FALSE if
  * user selects Exit,  TRUE after other commands.
  **********************************************************************/
+Boolean do_one_set(char *base_name)
 {
 	int choice;
 	ErrCode err;
@@ -531,10 +514,10 @@ Boolean do_one_set(char *base_name)
 }
 
 
-void main(void)
 /***********************************************************************
  * Call menu routine above until Exit/Cancel.
  **********************************************************************/
+void main(void)
 {
 	static char last_path[PATH_SIZE] = "";
 

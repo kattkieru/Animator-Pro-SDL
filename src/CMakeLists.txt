@@ -64,6 +64,8 @@ if (WITH_POCO)
 		"${CMAKE_CURRENT_SOURCE_DIR}/pocotur.c"
 		"${CMAKE_CURRENT_SOURCE_DIR}/pocotwee.c"
 		"${CMAKE_CURRENT_SOURCE_DIR}/pocouser.c"
+		"${CMAKE_CURRENT_SOURCE_DIR}/pocopicdrive.c"
+		"${CMAKE_CURRENT_SOURCE_DIR}/packcmap.c"
 		"${CMAKE_CURRENT_SOURCE_DIR}/qpoco.c"
 		"${CMAKE_CURRENT_SOURCE_DIR}/qpocoed.c"
 	)

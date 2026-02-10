@@ -7,11 +7,6 @@
 // the Autodesk Animator Pro.
 
 
-// Need to make sure we're running the right version of Animator Pro.
-#if __POCO__ < 181
-	#error "You must upgrade to Animator Pro 1.3 or later to run this program"
-#endif
-
 #include <stdio.h>
 #include <ctype.h>
 #include <optics.h>

@@ -24,7 +24,7 @@ static Poco_lib* poco_libs[] = {
 	&po_user_lib,  &po_draw_lib,  &po_text_lib,     &po_mode_lib, &po_turtle_lib, &po_time_lib,
 	&po_cel_lib,   &po_alt_lib,   &po_optics_lib,   &po_blit_lib, &po_misc_lib,   &po_load_save_lib,
 	&po_FILE_lib,  &po_str_lib,   &po_mem_lib,      &po_math_lib, &po_dos_lib,    &po_globalv_lib,
-	&po_title_lib, &po_tween_lib, &po_flicplay_lib,
+	&po_title_lib, &po_tween_lib, &po_flicplay_lib, &po_picdrive_lib,
 };
 
 /*****************************************************************************

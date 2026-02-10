@@ -159,6 +159,7 @@ extern Poco_lib po_globalv_lib;
 extern Poco_lib po_title_lib;
 extern Poco_lib po_tween_lib;
 extern Poco_lib po_flicplay_lib;
+extern Poco_lib po_picdrive_lib;
 
 extern Errcode builtin_err;
 
@@ -342,29 +343,29 @@ typedef struct polib_cel
 
 typedef struct polib_dos
 {
-	Errcode (*plfnsplit)(Popot path, Popot device, Popot dir, Popot file, Popot suf);
+	Errcode (*plfnsplit)(char* path, char* device, char* dir, char* file, char* suf);
 	char* protostr1;
-	Errcode (*plfnmerge)(Popot path, Popot device, Popot dir, Popot file, Popot suf);
+	Errcode (*plfnmerge)(char* path, char* device, char* dir, char* file, char* suf);
 	char* protostr2;
-	bool (*plDosExists)(Popot filename);
+	bool (*plDosExists)(char* filename);
 	char* protostr3;
-	Errcode (*plDosCopy)(Popot source, Popot dest);
+	Errcode (*plDosCopy)(char* source, char* dest);
 	char* protostr4;
-	Errcode (*plDosDelete)(Popot filename);
+	Errcode (*plDosDelete)(char* filename);
 	char* protostr5;
-	Errcode (*plDosRename)(Popot old, Popot new);
+	Errcode (*plDosRename)(char* oldname, char* newname);
 	char* protostr6;
-	Errcode (*plSetDir)(Popot dir);
+	Errcode (*plSetDir)(char* dir);
 	char* protostr7;
-	Errcode (*plGetDir)(Popot dir);
+	Errcode (*plGetDir)(char* dir);
 	char* protostr8;
-	int (*plDirList)(Popot list, Popot wild, bool get_dirs);
+	int (*plDirList)(Popot* list, char* wild, bool get_dirs);
 	char* protostr9;
-	void (*plFreeDirList)(Popot list);
+	void (*plFreeDirList)(Popot* list);
 	char* protostr10;
-	void (*plGetResourceDir)(Popot dir);
+	void (*plGetResourceDir)(char* dir);
 	char* protostr11;
-	void (*plGetProgramDir)(Popot dir);
+	void (*plGetProgramDir)(char* dir);
 	char* protostr12;
 } PolibDos;
 
