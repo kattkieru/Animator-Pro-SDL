@@ -63,6 +63,8 @@ add_poco_pos_test(struc01 "pos/PSTRUC01.POC")
 add_poco_pos_test(struc02 "pos/PSTRUC02.POC")
 add_poco_pos_test(struc03 "pos/PSTRUC03.POC")
 add_poco_pos_test(tok01 "pos/PTOK01.POC")
+add_poco_pos_test(vararg01 "pos/PVARARG01.POC")
+add_poco_pos_test(ptrret01 "pos/PPTRRET01.POC")
 
 
 ###############################################################################

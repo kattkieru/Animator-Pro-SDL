@@ -2,8 +2,7 @@
 #include "ptrmacro.h"
 #include "errcodes.h"
 #include "hw386.h"
-#include "jfile.h"
-#include "syslib.h" /* prototypes for pj_* when building with modern host */
+#include "jfile.h" /* includes pj_* prototypes from former syslib.h */
 #include "rexload.h"
 
 Errcode pj_open_rex(char* path, Jfile* pfile, EXP_HDR* hdrsp)

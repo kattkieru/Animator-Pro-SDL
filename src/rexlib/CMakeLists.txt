@@ -10,5 +10,6 @@ set(REXLIB_SRC_FILES
 	)
 
 add_library(minirex ${REXLIB_SRC_FILES})
-target_include_directories(minirex PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/inc")
+# Use src/inc/ as canonical headers (rexlib/inc/ is deprecated)
+target_include_directories(minirex PUBLIC "${CMAKE_SOURCE_DIR}/src/inc")
 

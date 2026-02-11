@@ -7,7 +7,6 @@
 #include "pocoface.h"
 #include "pocolib.h"
 #include "auto.h"
-#include "syslib.h"
 #include "flx.h"
 #include "render.h"
 
