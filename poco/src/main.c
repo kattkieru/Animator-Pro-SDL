@@ -370,9 +370,12 @@ extern Poco_lib po_FILE_lib;
 extern Poco_lib po_math_lib;
 extern Poco_lib po_str_lib;
 extern Poco_lib po_dummy_lib;
+extern Poco_lib po_dos_standalone_lib;
 
 static Poco_lib* poco_libs[] = {
-	&po_main_lib, &po_str_lib, &po_mem_lib, &po_FILE_lib, &po_math_lib, &po_dummy_lib,
+	&po_main_lib, &po_str_lib, &po_mem_lib, &po_FILE_lib, &po_math_lib,
+	&po_dos_standalone_lib, /* real fnsplit/fnmerge; searched before dummy */
+	&po_dummy_lib,
 };
 
 /****************************************************************************
@@ -685,7 +688,13 @@ int main(int argc, char* argv[])
 			case Err_no_main:
 				fprintf(stdout, "Program does not contain a main() routine.\n");
 				break;
-			case Err_in_err_file:
+			case Err_in_err_file: {
+				const char* errmsg = poco_get_error();
+				if (errmsg && errmsg[0]) {
+					fprintf(stdout, "%s", errmsg);
+				}
+				break;
+			}
 			case Err_abort:
 			default:
 				break;

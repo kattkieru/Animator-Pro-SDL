@@ -16,6 +16,7 @@ set(LIBPOCO_SRC_FILES
 		code.c
 		declare.c
 		dummylib.c
+		pocodos_standalone.c
 		fold.c
 		funccall.c
 		linklist.c
@@ -70,7 +71,7 @@ target_compile_definitions(libpoco PUBLIC USE_EXTERNAL_PJ_HOST)
 # Host helpers for Poco CLI and external apps (must be before libpoco/poco)
 add_subdirectory(pocohost)
 
-target_link_libraries(libpoco PUBLIC ffi_static hashmap PRIVATE pocohost)
+target_link_libraries(libpoco PUBLIC ffi_static hashmap PRIVATE pocohost trdfile)
 
 set(POCO_MAIN_SRC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/src/main.c")
 if (APPLE OR UNIX)

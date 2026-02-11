@@ -53,6 +53,7 @@ endfunction()
 
 add_poco_pos_test(array01 "pos/PARRAY01.POC")
 add_poco_pos_test(array02 "pos/PARRAY02.POC")
+add_poco_pos_test(fnsplit01 "pos/PFSPLIT01.POC")
 add_poco_pos_test(array03 "pos/PARRAY03.POC")
 add_poco_pos_test(chcon01 "pos/PCHCON01.POC")
 add_poco_pos_test(for01 "pos/PFOR01.POC")
