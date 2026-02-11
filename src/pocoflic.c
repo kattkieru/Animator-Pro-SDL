@@ -702,10 +702,10 @@ static void do_seek_frame(Flic *pflic, int the_frame)
  * return each of the flicinfo values for which we got a non-NULL pointer.
  *	(service routine for FlicInfo() and FlicOpenInfo())
  ****************************************************************************/
-	static Errcode return_flic_info(Flic *pflic,
-									Popot pwidth, Popot pheight,
-									Popot pspeed, Popot pframes)
-	{
+static Errcode return_flic_info(Flic *pflic,
+								int* pwidth, int* pheight,
+								int* pspeed, int* pframes)
+{
 	Flifile *flifile;
 
 	if (NULL == pflic || NULL == pflic->flifile) {
@@ -715,32 +715,20 @@ static void do_seek_frame(Flic *pflic, int the_frame)
 
 	flifile = pflic->flifile;
 
-	if (NULL != pwidth.pt) {
-		if (Success != Popot_bufcheck(&pwidth, sizeof(int))) {
-			return builtin_err;
-		}
-		*(int *)pwidth.pt = flifile->hdr.width;
+	if (NULL != pwidth) {
+		*pwidth = flifile->hdr.width;
 	}
 
-	if (NULL != pheight.pt) {
-		if (Success != Popot_bufcheck(&pheight, sizeof(int))) {
-			return builtin_err;
-		}
-		*(int *)pheight.pt = flifile->hdr.height;
+	if (NULL != pheight) {
+		*pheight = flifile->hdr.height;
 	}
 
-	if (NULL != pspeed.pt) {
-		if (Success != Popot_bufcheck(&pspeed, sizeof(int))) {
-			return builtin_err;
-		}
-		*(int *)pspeed.pt = flifile->hdr.speed;
+	if (NULL != pspeed) {
+		*pspeed = flifile->hdr.speed;
 	}
 
-	if (NULL != pframes.pt) {
-		if (Success != Popot_bufcheck(&pframes, sizeof(int))) {
-			return builtin_err;
-		}
-		*(int *)pframes.pt = flifile->hdr.frame_count;
+	if (NULL != pframes) {
+		*pframes = flifile->hdr.frame_count;
 	}
 
 	return Success;
@@ -756,26 +744,23 @@ static void do_seek_frame(Flic *pflic, int the_frame)
 /*****************************************************************************
  * Flic *FlicOpen(char *path)
  ****************************************************************************/
-static Popot flic_open(Popot path)
+static void* flic_open(char* path)
 {
 	Errcode err;
-	Popot	ppflic = {NULL, NULL, NULL};
 	Flic	*pflic;
 
-	if (NULL == path.pt) {
+	if (NULL == path) {
 		builtin_err = Err_null_ref;
-		return ppflic;
+		return NULL;
 	}
 
-	err = do_flic_open(path.pt, &pflic);
+	err = do_flic_open(path, &pflic);
 	if (Success > err) {
 		builtin_err = err;
-		return ppflic;
+		return NULL;
 	}
 
-	ppflic = po_ptr2ppt(pflic, sizeof(Flic));
-
-	return ppflic;
+	return pflic;
 }
 
 /*****************************************************************************
@@ -784,22 +769,19 @@ static Popot flic_open(Popot path)
  * this is the *only* FLICPLAY function that does not abort the Poco program
  * if the flic file can't be opened.  instead, it returns an error status.
  ****************************************************************************/
-static Errcode flic_info(Popot path, Popot width, Popot height, Popot speed, Popot frames)
+static Errcode flic_info(char* path, int* width, int* height, int* speed, int* frames)
 {
 	Errcode err;
 	Flic	*pflic;
-	Flifile *flifile;
 
-	if (NULL == path.pt) {
+	if (NULL == path) {
 		return builtin_err = Err_null_ref;
 	}
 
-	err = do_flic_open(path.pt, &pflic);
+	err = do_flic_open(path, &pflic);
 	if (Success > err) {
 		return err;
 	}
-
-	flifile = pflic->flifile;
 
 	err = return_flic_info(pflic, width, height, speed, frames);
 
@@ -811,45 +793,45 @@ static Errcode flic_info(Popot path, Popot width, Popot height, Popot speed, Pop
 /*****************************************************************************
  * Flic *FlicOpenInfo(char *path, int *w, int *h, int *speed, int *frames)
  ****************************************************************************/
-static Popot flic_open_info(Popot path, Popot width, Popot height, Popot speed, Popot frames)
+static void* flic_open_info(char* path, int* width, int* height, int* speed, int* frames)
 {
-	Popot	ppflic;
+	void *pflic;
 
-	ppflic = flic_open(path);
-	if (Success <= builtin_err) {
-		return_flic_info(ppflic.pt, width, height, speed, frames);
+	pflic = flic_open(path);
+	if (pflic != NULL && Success <= builtin_err) {
+		return_flic_info(pflic, width, height, speed, frames);
 	}
-	return ppflic;
+	return pflic;
 }
 
 /*****************************************************************************
  * void FlicClose(Flic *pflic)
  ****************************************************************************/
-static void flic_close(Popot theflic)
+static void flic_close(void* theflic)
 {
-	if (Success > flic_integrity_check(theflic.pt)) {
+	if (Success > flic_integrity_check(theflic)) {
 		return;
 	}
-	do_flic_close(theflic.pt);
+	do_flic_close(theflic);
 }
 
 /*****************************************************************************
  * void FlicRewind(Flic *pflic)
  ****************************************************************************/
-static void flic_rewind(Popot theflic)
+static void flic_rewind(void* theflic)
 {
-	if (Success > flic_integrity_check(theflic.pt)) {
+	if (Success > flic_integrity_check(theflic)) {
 		return;
 	}
-	do_rewind(theflic.pt);
+	do_rewind(theflic);
 }
 
 /*****************************************************************************
  * void FlicSeekFream(Flic *pflic, int toframe)
  ****************************************************************************/
-static void flic_seek_frame(Popot theflic, int theframe)
+static void flic_seek_frame(void* theflic, int theframe)
 {
-	Flic *pflic = theflic.pt;
+	Flic *pflic = theflic;
 
 	if (Success > flic_integrity_check(pflic)) {
 		return;
@@ -860,95 +842,99 @@ static void flic_seek_frame(Popot theflic, int theframe)
 		return;
 	}
 
-	do_seek_frame(theflic.pt, theframe);
+	do_seek_frame(theflic, theframe);
 }
 
 /*****************************************************************************
  * void FlicOptions(Flic *f, int s, int input_stops, Screen *s, int x int y)
  ****************************************************************************/
-static void flic_play_options(Popot theflic,
+static void flic_play_options(void* theflic,
 					   int speed, int input_stops, int see_mouse,
-					   Popot screen, int x, int y)
+					   void* screen, int x, int y)
 {
-	if (Success > flic_integrity_check(theflic.pt)) {
+	if (Success > flic_integrity_check(theflic)) {
 		return;
 	}
 
-	builtin_err = do_flic_options(theflic.pt, speed, input_stops, see_mouse, screen.pt, x, y);
+	builtin_err = do_flic_options(theflic, speed, input_stops, see_mouse, screen, x, y);
 }
 
 /*****************************************************************************
  * void FlicPlayUntil(Flic *flic, EventFunc *pocofunc, void *userdata)
  ****************************************************************************/
-static void flic_play_until(Popot theflic, Popot eventfunc, Popot userdata)
+static void flic_play_until(void* theflic, void* eventfunc, void* userdata)
 {
 	void	*fuf;
 	Flic	*pflic;
+	Popot userdata_ppt;
 
-	if (Success > flic_integrity_check(theflic.pt)) {
+	if (Success > flic_integrity_check(theflic)) {
 		return;
 	}
-	pflic = theflic.pt;
+	pflic = theflic;
 
-	if (NULL == eventfunc.pt) {
+	if (NULL == eventfunc) {
 		builtin_err = Err_null_ref;
 		return;
 	}
 
-	if (NULL == (fuf = po_fuf_code(eventfunc.pt))) {
+	if (NULL == (fuf = po_fuf_code(eventfunc))) {
 		builtin_err = Err_function_not_found;
 		return;
 	}
 
-	builtin_err = do_play_until(theflic.pt, fuf, userdata);
+	/* Wrap userdata in a Popot for the callback */
+	Popot_make_null(&userdata_ppt);
+	userdata_ppt.pt = userdata;
+	builtin_err = do_play_until(theflic, fuf, userdata_ppt);
 }
 
 /*****************************************************************************
  * void FlicPlay(Flic *pflic)
  ****************************************************************************/
-static void flic_play(Popot theflic)
+static void flic_play(void* theflic)
 {
-	if (Success > flic_integrity_check(theflic.pt)) {
+	if (Success > flic_integrity_check(theflic)) {
 		return;
 	}
 
-	builtin_err = do_play(theflic.pt);
+	builtin_err = do_play(theflic);
 }
 
 /*****************************************************************************
  * void FlicPlay(Flic *pflic)
  ****************************************************************************/
-static void flic_play_once(Popot theflic)
+static void flic_play_once(void* theflic)
 {
-	if (Success > flic_integrity_check(theflic.pt)) {
+	if (Success > flic_integrity_check(theflic)) {
 		return;
 	}
 
-	builtin_err = do_play_once(theflic.pt);
+	builtin_err = do_play_once(theflic);
 }
 
 /*****************************************************************************
  * void FlicPlay(Flic *pflic, int millisecs)
  ****************************************************************************/
-static void flic_play_timed(Popot theflic, int milliseconds)
+static void flic_play_timed(void* theflic, int milliseconds)
 {
-	if (Success > flic_integrity_check(theflic.pt)) {
+	if (Success > flic_integrity_check(theflic)) {
 		return;
 	}
 
-	builtin_err = do_play_timed(theflic.pt, milliseconds);
+	builtin_err = do_play_timed(theflic, milliseconds);
 }
 
 /*****************************************************************************
  * void FlicPlay(Flic *pflic, int count)
  ****************************************************************************/
-static void flic_play_count(Popot theflic, int frame_count)
+static void flic_play_count(void* theflic, int frame_count)
 {
-	if (Success > flic_integrity_check(theflic.pt)) {
+	if (Success > flic_integrity_check(theflic)) {
 		return;
 	}
 
-	builtin_err = do_play_count(theflic.pt, frame_count);
+	builtin_err = do_play_count(theflic, frame_count);
 }
 
 /*----------------------------------------------------------------------------

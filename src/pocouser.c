@@ -367,10 +367,14 @@ static bool po_rub_circle(int* x, int* y, int* rad)
  * int RubPoly(int **x, int **y)
  * returns # of points or negative Errcode
  ****************************************************************************/
-static int po_rub_poly(Popot* px, Popot* py)
+static int po_rub_poly(int** px, int** py)
 {
 	Poly p;
 	Errcode err;
+	LLpoint *pt;
+	int *xarr, *yarr;
+	int i;
+	Popot ppt;
 
 	if (px == NULL || py == NULL) {
 		return (builtin_err = Err_null_ref);
@@ -381,9 +385,37 @@ static int po_rub_poly(Popot* px, Popot* py)
 	}
 	clear_struct(&p);
 	make_poly(&p, vs.closed_curve);
-	if ((err = po_poly_to_arrays(&p, px, py)) >= Success) {
-		err = p.pt_count;
+	if (p.pt_count <= 0) {
+		free_polypoints(&p);
+		*px = NULL;
+		*py = NULL;
+		return 0;
 	}
+
+	/* Allocate arrays for x and y coordinates */
+	ppt = poco_lmalloc(p.pt_count * sizeof(int));
+	if (ppt.pt == NULL) {
+		free_polypoints(&p);
+		return Err_no_memory;
+	}
+	xarr = ppt.pt;
+
+	ppt = poco_lmalloc(p.pt_count * sizeof(int));
+	if (ppt.pt == NULL) {
+		free_polypoints(&p);
+		return Err_no_memory;
+	}
+	yarr = ppt.pt;
+
+	/* Copy points to arrays */
+	for (i = 0, pt = p.clipped_list; pt != NULL && i < p.pt_count; pt = pt->next, i++) {
+		xarr[i] = pt->x;
+		yarr[i] = pt->y;
+	}
+
+	*px = xarr;
+	*py = yarr;
+	err = p.pt_count;
 	free_polypoints(&p);
 	return (err);
 }
@@ -544,31 +576,9 @@ static bool po_Slider(int* inum, int min, int max, char* hailing)
 }
 
 /*****************************************************************************
- * service routine
- ****************************************************************************/
-static Errcode popot_to_pt(Popot* ppp, void** cc, int count)
-{
-	Popot* pp;
-	int i;
-
-	if ((pp = ppp->pt) == NULL) {
-		return (Err_null_ref);
-	}
-	if (Popot_bufsize(ppp) < count * sizeof(Popot)) {
-		return (Err_index_big);
-	}
-	for (i = 0; i < count; ++i, ++cc, ++pp) {
-		if (NULL == (*cc = pp->pt)) {
-			return (Err_null_ref);
-		}
-	}
-	return (Success);
-}
-
-/*****************************************************************************
  * int Qchoice(char **buttons, int bcount, char *header, ...)
  ****************************************************************************/
-static Errcode po_ChoiceBox(Popot* pchoices, int ccount, char* fmt, ...)
+static Errcode po_ChoiceBox(char** pchoices, int ccount, char* fmt, ...)
 {
 	va_list args;
 	char* choices[TBOX_MAXCHOICES + 1];
@@ -586,7 +596,7 @@ static Errcode po_ChoiceBox(Popot* pchoices, int ccount, char* fmt, ...)
 		return (builtin_err = Err_null_ref);
 	}
 	for (i = 0; i < ccount; ++i) {
-		if (NULL == (choices[i] = pchoices[i].pt)) {
+		if (NULL == (choices[i] = pchoices[i])) {
 			return (builtin_err = Err_null_ref);
 		}
 	}
@@ -673,7 +683,7 @@ static bool po_qstring(char* strbuf, int bufsize, char* hailing)
 	return rv;
 }
 
-static int po_some_choice(Popot* pchoices, int ccount, USHORT* flags, char* header)
+static int po_some_choice(char** pchoices, int ccount, USHORT* flags, char* header)
 {
 #define CMAX 10
 #define CHMAX 60
@@ -691,7 +701,7 @@ static int po_some_choice(Popot* pchoices, int ccount, USHORT* flags, char* head
 		return (builtin_err = Err_null_ref);
 	}
 	for (i = 0; i < ccount; ++i) {
-		if (NULL == (pbuf[i] = pchoices[i].pt)) {
+		if (NULL == (pbuf[i] = pchoices[i])) {
 			return (builtin_err = Err_null_ref);
 		}
 	}
@@ -716,7 +726,7 @@ static int po_some_choice(Popot* pchoices, int ccount, USHORT* flags, char* head
 /*****************************************************************************
  * int Qmenu(char **choices, int ccount, char *header)
  ****************************************************************************/
-static int po_qmenu(Popot* pchoices, int ccount, char* header)
+static int po_qmenu(char** pchoices, int ccount, char* header)
 {
 	return po_some_choice(pchoices, ccount, NULL, header);
 }
@@ -724,7 +734,7 @@ static int po_qmenu(Popot* pchoices, int ccount, char* header)
 /*****************************************************************************
  *int  QmenuWithFlags(char **choices, int ccount, short *flags, char *header)
  ****************************************************************************/
-static int po_qmenu_with_flags(Popot* pchoices, int ccount, short* pflags, char* header)
+static int po_qmenu_with_flags(char** pchoices, int ccount, short* pflags, char* header)
 {
 	int i;
 	USHORT save;
@@ -744,7 +754,7 @@ static int po_qmenu_with_flags(Popot* pchoices, int ccount, short* pflags, char*
 /*****************************************************************************
  * convert a poco char *names[]  array to a Names list
  ****************************************************************************/
-static Errcode popot_to_names(Popot* pp, int pcount, Names** pnames)
+static Errcode strarr_to_names(char** pp, int pcount, Names** pnames)
 {
 	void* s;
 	int i;
@@ -757,7 +767,7 @@ static Errcode popot_to_names(Popot* pp, int pcount, Names** pnames)
 		goto ERR;
 	}
 	for (i = 0; i < pcount; i++) {
-		if ((s = pp[i].pt) == NULL) {
+		if ((s = pp[i]) == NULL) {
 			err = Err_null_ref;
 			goto ERR;
 		}
@@ -782,7 +792,7 @@ ERR:
  * bool Qlist(char *choicestr, int *choice,
  *	 char **items, int icount, int *ipos, char *header)
  ****************************************************************************/
-static bool po_Qlist(char* choice_str, int* choice_ix, Popot* items, int icount, int* ipos,
+static bool po_Qlist(char* choice_str, int* choice_ix, char** items, int icount, int* ipos,
 					 char* header)
 {
 	Names* nlist = NULL;
@@ -804,7 +814,7 @@ static bool po_Qlist(char* choice_str, int* choice_ix, Popot* items, int icount,
 	if (header == NULL) {
 		header = "";
 	}
-	if ((builtin_err = popot_to_names(items, icount, &nlist)) < Success) {
+	if ((builtin_err = strarr_to_names(items, icount, &nlist)) < Success) {
 		goto OUT;
 	}
 	maxchars = longest_name(nlist) + 1;
@@ -858,7 +868,7 @@ static bool remember_info_btn(Names* which, void* data)
 /*****************************************************************************
  * bool Qscroll(int *choice, char **items, int icount, int *ipos, char *hdr)
  ****************************************************************************/
-static int po_Qscroll(int* choice_ix, Popot* items, int icount, int* ipos, Popot* button_texts,
+static int po_Qscroll(int* choice_ix, char** items, int icount, int* ipos, char** button_texts,
 					  char* header)
 {
 	Names* nlist = NULL;
@@ -880,7 +890,7 @@ static int po_Qscroll(int* choice_ix, Popot* items, int icount, int* ipos, Popot
 		header = "";
 	}
 
-	if ((builtin_err = popot_to_names(items, icount, &nlist)) < Success) {
+	if ((builtin_err = strarr_to_names(items, icount, &nlist)) < Success) {
 		goto OUT;
 	}
 	maxchars = longest_name(nlist) + 1;
@@ -898,11 +908,11 @@ static int po_Qscroll(int* choice_ix, Popot* items, int icount, int* ipos, Popot
 		usebtexts = NULL;
 	} else {
 		usebtexts = btexts;
-		if ((NULL == (btexts[0] = button_texts[0].pt)) || (NULL == (btexts[2] = button_texts[2].pt))) {
+		if ((NULL == (btexts[0] = button_texts[0])) || (NULL == (btexts[2] = button_texts[2]))) {
 			builtin_err = Err_null_ref;
 			goto OUT;
 		}
-		if (NULL == (btexts[1] = button_texts[1].pt)) {
+		if (NULL == (btexts[1] = button_texts[1])) {
 			btexts[1] = "";
 		}
 	}

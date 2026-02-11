@@ -29,213 +29,213 @@ extern Errcode save_titles(char *title); // from options.c
 /*****************************************************************************
  * ErrCode LoadFlic(char *name)
  ****************************************************************************/
-static Errcode po_load_fli(Popot name)
+static Errcode po_load_fli(char* name)
 {
-	if (name.pt == NULL) {
+	if (name == NULL) {
 		return builtin_err = Err_null_ref;
 	}
-	return resize_load_fli(name.pt);
+	return resize_load_fli(name);
 }
 
 /*****************************************************************************
  * ErrCode SaveFlic(char *name)
  ****************************************************************************/
-static Errcode po_save_fli(Popot name)
+static Errcode po_save_fli(char* name)
 {
-	if (name.pt == NULL) {
+	if (name == NULL) {
 		return builtin_err = Err_null_ref;
 	}
-	return save_fli(name.pt);
+	return save_fli(name);
 }
 
 /*****************************************************************************
  * ErrCode LoadPic(char *name)
  ****************************************************************************/
-static Errcode po_load_pic(Popot title)
+static Errcode po_load_pic(char* title)
 {
-	if (title.pt == NULL) {
+	if (title == NULL) {
 		return builtin_err = Err_null_ref;
 	}
 	dirties();
-	return load_the_pic(title.pt);
+	return load_the_pic(title);
 }
 
 /*****************************************************************************
  * ErrCode SavePic(char *name)
  ****************************************************************************/
-static Errcode po_save_pic(Popot title)
+static Errcode po_save_pic(char* title)
 {
-	if (title.pt == NULL) {
+	if (title == NULL) {
 		return builtin_err = Err_null_ref;
 	}
-	return save_current_pictype(title.pt, vb.pencel);
+	return save_current_pictype(title, vb.pencel);
 }
 
 /*****************************************************************************
  * ErrCode LoadScreenPic(Screen *s, char *name)
  ****************************************************************************/
-static Errcode po_load_screen_pic(Popot screen, Popot title)
+static Errcode po_load_screen_pic(void* screen, char* title)
 {
 	Rcel* s;
-	if (title.pt == NULL) {
+	if (title == NULL) {
 		return builtin_err = Err_null_ref;
 	}
-	if (screen.pt == NULL) {
+	if (screen == NULL) {
 		s = vb.pencel;
 	} else {
-		s = screen.pt;
+		s = screen;
 	}
 	dirties();
-	return load_any_picture(title.pt, s);
+	return load_any_picture(title, s);
 }
 
 /*****************************************************************************
  * ErrCode SaveScreenPic(Screen *s, char *name)
  ****************************************************************************/
-static Errcode po_save_screen_pic(Popot screen, Popot title)
+static Errcode po_save_screen_pic(void* screen, char* title)
 {
 	Rcel* s;
-	if (title.pt == NULL) {
+	if (title == NULL) {
 		return builtin_err = Err_null_ref;
 	}
-	if (screen.pt == NULL) {
+	if (screen == NULL) {
 		s = vb.pencel;
 	} else {
-		s = screen.pt;
+		s = screen;
 	}
-	return save_current_pictype(title.pt, s);
+	return save_current_pictype(title, s);
 }
 
 /*****************************************************************************
  * ErrCode LoadCel(char *name)
  ****************************************************************************/
-static Errcode po_load_cel(Popot name)
+static Errcode po_load_cel(char* name)
 {
-	if (name.pt == NULL) {
+	if (name == NULL) {
 		return builtin_err = Err_null_ref;
 	}
-	return load_the_cel(name.pt);
+	return load_the_cel(name);
 }
 
 /*****************************************************************************
  * ErrCode SaveCel(char *name)
  ****************************************************************************/
-static Errcode po_save_cel(Popot name)
+static Errcode po_save_cel(char* name)
 {
-	if (name.pt == NULL) {
+	if (name == NULL) {
 		return builtin_err = Err_null_ref;
 	}
-	return save_the_cel(name.pt);
+	return save_the_cel(name);
 }
 
 /*****************************************************************************
  * ErrCode LoadPath(char *name)
  ****************************************************************************/
-static Errcode po_load_path(Popot name)
+static Errcode po_load_path(char* name)
 {
-	if (name.pt == NULL) {
+	if (name == NULL) {
 		return builtin_err = Err_null_ref;
 	}
-	return load_path(name.pt);
+	return load_path(name);
 }
 
 /*****************************************************************************
  * ErrCode SavePath(char *name)
  ****************************************************************************/
-static Errcode po_save_path(Popot name)
+static Errcode po_save_path(char* name)
 {
-	if (name.pt == NULL) {
+	if (name == NULL) {
 		return builtin_err = Err_null_ref;
 	}
-	return save_path(name.pt);
+	return save_path(name);
 }
 
 /*****************************************************************************
  * ErrCode LoadPoly(char *name)
  ****************************************************************************/
-static Errcode po_load_poly(Popot name)
+static Errcode po_load_poly(char* name)
 {
-	if (name.pt == NULL) {
+	if (name == NULL) {
 		return builtin_err = Err_null_ref;
 	}
-	return load_polygon(name.pt);
+	return load_polygon(name);
 }
 
 /*****************************************************************************
  * ErrCode SavePoly(char *name)
  ****************************************************************************/
-static Errcode po_save_poly(Popot name)
+static Errcode po_save_poly(char* name)
 {
-	if (name.pt == NULL) {
+	if (name == NULL) {
 		return builtin_err = Err_null_ref;
 	}
-	return save_polygon(name.pt);
+	return save_polygon(name);
 }
 
 /*****************************************************************************
  * ErrCode LoadColors(char *name)
  ****************************************************************************/
-static Errcode po_load_colors(Popot name)
+static Errcode po_load_colors(char* name)
 {
-	if (name.pt == NULL) {
+	if (name == NULL) {
 		return builtin_err = Err_null_ref;
 	}
-	return load_palette(name.pt, 1);
+	return load_palette(name, 1);
 }
 
 /*****************************************************************************
  * ErrCode SaveColors(char *name)
  ****************************************************************************/
-static Errcode po_save_colors(Popot name)
+static Errcode po_save_colors(char* name)
 {
-	if (name.pt == NULL) {
+	if (name == NULL) {
 		return builtin_err = Err_null_ref;
 	}
-	return pj_col_save(name.pt, vb.pencel->cmap);
+	return pj_col_save(name, vb.pencel->cmap);
 }
 
 /*****************************************************************************
  * ErrCode LoadTitles(char *name)
  ****************************************************************************/
-static Errcode po_load_titles(Popot name)
+static Errcode po_load_titles(char* name)
 {
-	if (name.pt == NULL) {
+	if (name == NULL) {
 		return builtin_err = Err_null_ref;
 	}
-	return load_titles(name.pt);
+	return load_titles(name);
 }
 
 /*****************************************************************************
  * ErrCode SaveTitles(char *name)
  ****************************************************************************/
-static Errcode po_save_titles(Popot name)
+static Errcode po_save_titles(char* name)
 {
-	if (name.pt == NULL) {
+	if (name == NULL) {
 		return builtin_err = Err_null_ref;
 	}
-	return save_titles(name.pt);
+	return save_titles(name);
 }
 
 /*****************************************************************************
  * ErrCode SaveMask(char *name)
  ****************************************************************************/
-static Errcode po_save_mask(Popot name)
+static Errcode po_save_mask(char* name)
 {
-	if (name.pt == NULL) {
+	if (name == NULL) {
 		return builtin_err = Err_null_ref;
 	}
-	return save_the_mask(name.pt);
+	return save_the_mask(name);
 }
 
 /*****************************************************************************
  * ErrCode LoadMask(char *name)
  ****************************************************************************/
-static Errcode po_load_mask(Popot name)
+static Errcode po_load_mask(char* name)
 {
-	if (name.pt == NULL) {
+	if (name == NULL) {
 		return builtin_err = Err_null_ref;
 	}
-	return load_the_mask(name.pt);
+	return load_the_mask(name);
 }
 
 /*----------------------------------------------------------------------------
