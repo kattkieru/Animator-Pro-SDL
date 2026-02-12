@@ -71,8 +71,8 @@ int matherr(void);
 Errcode boxf(char* fmt, ...);
 
 int po_puts(Popot s);
-int po_printf(long vargcount, long vargsize, char* format, ...);
-void po_qtext(long vargcount, long vargsize, Popot åformat, ...);
+int po_printf(char* format, ...);
+void po_qtext(char* format, ...);
 
 char* ido_type_to_str(IdoType ido_type);
 void dump_func_frame(const char* name, const Func_frame* frame_in);
@@ -325,21 +325,18 @@ size_t get_errtext(Errcode err, char* buf)
 /****************************************************************************
  *
  ***************************************************************************/
-void po_qtext(long vargcount, long vargsize, Popot format, ...)
+void po_qtext(char* format, ...)
 {
 	va_list args;
 
-	(void)vargcount;
-	(void)vargsize;
-
-	if (format.pt == NULL) {
+	if (format == NULL) {
 		builtin_err = Err_null_ref;
 		return;
 	}
 
 	fputs("------ Qtext --------------------------\n\n", stdout);
 	va_start(args, format);
-	vfprintf(stdout, format.pt, args);
+	vfprintf(stdout, format, args);
 	va_end(args);
 
 	fputs("\n\n------ Hit any key to Continue --------\n", stdout);

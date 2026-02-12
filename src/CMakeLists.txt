@@ -210,6 +210,9 @@ if (WITH_ANI)
 		)
 	endif()
 
+# Match util/CLIB_MEMORY so main.c can log pj memory stats on exit
+target_compile_definitions(${PROJECT_NAME} PRIVATE CLIB_MEMORY)
+
 target_link_libraries(
 		${PROJECT_NAME}
 			trdfile

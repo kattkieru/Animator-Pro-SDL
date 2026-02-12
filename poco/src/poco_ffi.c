@@ -723,20 +723,6 @@ Pt_num po_ffi_call(const Po_FFI* binding, const Pt_num* stack_in, const ffi_type
 		po_ffi_assign_variadic_parameters(&exec_binding, arg_count, (void*)stack, variadic_types);
 	}
 
-// #region agent log
-if (is_variadic) {
-	FILE*_df=fopen("/Users/kiki/dev/animatorpro/.cursor/debug.log","a");
-	if(_df){
-		fprintf(_df,"{\"hypothesisId\":\"H26\",\"runId\":\"post-fix\",\"location\":\"poco_ffi.c:pre_ffi_call\",\"message\":\"variadic call\",\"data\":{\"name\":\"%s\",\"nfixed\":%u,\"ntotal\":%u,\"vargcount\":%ld",
-			exec_binding.name, original_arg_count - is_variadic, exec_binding.arg_count, arg_count);
-		for (unsigned int _i = 0; _i < exec_binding.arg_count && _i < 8; _i++) {
-			fprintf(_df,",\"arg%u_type\":%u,\"arg%u_val\":\"0x%lx\"", _i, exec_binding.arg_types[_i] ? exec_binding.arg_types[_i]->type : 99, _i, *(unsigned long*)exec_binding.args[_i]);
-		}
-		fprintf(_df,"}}\n");
-		fclose(_df);
-	}
-}
-// #endregion
 
 	/* At this point all the binding types and sizes are set,
 	 * but we still need to assign the data pointers.
@@ -791,6 +777,10 @@ if (is_variadic) {
 			result.d = *((double*)&exec_binding.result);
 			break;
 		case IDO_POINTER:
+			result.ppt.pt  = *((void**)&exec_binding.result);
+			result.ppt.min = NULL;
+			result.ppt.max = (void*)~(size_t)0;
+			break;
 		case IDO_CPT:
 			result.p = *((void**)&exec_binding.result);
 			break;

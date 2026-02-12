@@ -233,10 +233,6 @@ Errcode pj_load_pocorex(Poco_lib **lib, const char* script_path, char *name, cha
 	if (lib == NULL || name == NULL) {
 		return Err_null_ref;
 	}
-	
-// #region agent log
-{FILE*_df=fopen("/Users/kiki/dev/animatorpro/.cursor/debug.log","a");if(_df){fprintf(_df,"{\"hypothesisId\":\"H20\",\"runId\":\"post-fix\",\"location\":\"pocorex.c:pj_load_pocorex\",\"message\":\"entry\",\"data\":{\"name\":\"%s\"}}\n",name?name:"(null)");fclose(_df);}}
-// #endregion
 
 	/* Use local resolver that tries known locations; prefer script directory first */
 	{
@@ -245,9 +241,6 @@ Errcode pj_load_pocorex(Poco_lib **lib, const char* script_path, char *name, cha
 		const char* candidate = NULL;
 		if (script_path != NULL) {
 			get_directory_from_path(script_path, dir_path, sizeof(dir_path));
-// #region agent log
-{FILE*_df=fopen("/Users/kiki/dev/animatorpro/.cursor/debug.log","a");if(_df){fprintf(_df,"{\"hypothesisId\":\"H20\",\"runId\":\"post-fix\",\"location\":\"pocorex.c:script_dir_search\",\"message\":\"trying script dir\",\"data\":{\"dir_path\":\"%s\"}}\n",dir_path);fclose(_df);}}
-// #endregion
 			candidate = try_load_path(dir_path, name, test_path);
 		}
 		if (candidate == NULL) {
@@ -256,9 +249,6 @@ Errcode pj_load_pocorex(Poco_lib **lib, const char* script_path, char *name, cha
 				if (len > 0 && dir_path[len - 1] != '/' && dir_path[len - 1] != '\\') {
 					strcat(dir_path, "/");
 				}
-// #region agent log
-{FILE*_df=fopen("/Users/kiki/dev/animatorpro/.cursor/debug.log","a");if(_df){fprintf(_df,"{\"hypothesisId\":\"H20\",\"runId\":\"post-fix\",\"location\":\"pocorex.c:cwd_search\",\"message\":\"trying cwd\",\"data\":{\"dir_path\":\"%s\"}}\n",dir_path);fclose(_df);}}
-// #endregion
 				candidate = try_load_path(dir_path, name, test_path);
 			}
 		}
@@ -275,9 +265,6 @@ Errcode pj_load_pocorex(Poco_lib **lib, const char* script_path, char *name, cha
 		if (candidate == NULL) {
 			char exe_path[PATH_MAX];
 			ssize_t elen = readlink("/proc/self/exe", exe_path, sizeof(exe_path) - 1);
-// #region agent log
-{FILE*_df=fopen("/Users/kiki/dev/animatorpro/.cursor/debug.log","a");if(_df){fprintf(_df,"{\"hypothesisId\":\"H20\",\"runId\":\"post-fix\",\"location\":\"pocorex.c:procself_search\",\"message\":\"readlink /proc/self/exe\",\"data\":{\"elen\":%zd}}\n",elen);fclose(_df);}}
-// #endregion
 			if (elen > 0) {
 				exe_path[elen] = '\0';
 				get_directory_from_path(exe_path, dir_path, sizeof(dir_path));
@@ -290,17 +277,11 @@ Errcode pj_load_pocorex(Poco_lib **lib, const char* script_path, char *name, cha
 			uint32_t bundle_size = sizeof(bundle_path);
 			if (_NSGetExecutablePath(bundle_path, &bundle_size) == 0) {
 				get_directory_from_path(bundle_path, dir_path, sizeof(dir_path));
-// #region agent log
-{FILE*_df=fopen("/Users/kiki/dev/animatorpro/.cursor/debug.log","a");if(_df){fprintf(_df,"{\"hypothesisId\":\"H20\",\"runId\":\"post-fix\",\"location\":\"pocorex.c:nsgetexe_search\",\"message\":\"trying exe dir\",\"data\":{\"dir_path\":\"%s\"}}\n",dir_path);fclose(_df);}}
-// #endregion
 				candidate = try_load_path(dir_path, name, test_path);
 			}
 		}
 #endif
 #endif
-// #region agent log
-{FILE*_df=fopen("/Users/kiki/dev/animatorpro/.cursor/debug.log","a");if(_df){fprintf(_df,"{\"hypothesisId\":\"H20\",\"runId\":\"post-fix\",\"location\":\"pocorex.c:search_result\",\"message\":\"search complete\",\"data\":{\"candidate\":\"%s\"}}\n",candidate?candidate:"(null)");fclose(_df);}}
-// #endregion
 		lib_path = (char*)candidate;
 	}
 	if (lib_path == NULL) {
@@ -313,9 +294,6 @@ Errcode pj_load_pocorex(Poco_lib **lib, const char* script_path, char *name, cha
 #else
 	handle = poco_dlopen(lib_path, RTLD_LAZY);
 #endif
-// #region agent log
-{FILE*_df=fopen("/Users/kiki/dev/animatorpro/.cursor/debug.log","a");if(_df){fprintf(_df,"{\"hypothesisId\":\"H20\",\"runId\":\"post-fix\",\"location\":\"pocorex.c:dlopen_result\",\"message\":\"dlopen attempted\",\"data\":{\"lib_path\":\"%s\",\"handle\":\"%s\",\"dlerror\":\"%s\"}}\n",lib_path?lib_path:"(null)",handle?"ok":"NULL",handle?"":(dlerror()?dlerror():"(none)"));fclose(_df);}}
-// #endregion
 	if (handle == NULL) {
 #ifdef _WIN32
 		DWORD err_code = GetLastError();

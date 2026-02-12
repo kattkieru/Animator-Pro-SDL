@@ -60,9 +60,6 @@ static void po_tur_set_position(double x, double y, double degrees)
  ****************************************************************************/
 static void po_tur_get_position(double* x, double* y, double* degrees)
 {
-// #region agent log
-{FILE* _dbg=fopen("/Users/kiki/dev/animatorpro/.cursor/debug.log","a");if(_dbg){fprintf(_dbg,"{\"location\":\"pocotur.c:po_tur_get_position\",\"message\":\"Where entry\",\"data\":{\"x\":\"%p\",\"y\":\"%p\",\"degrees\":\"%p\"},\"hypothesisId\":\"H3\"}\n",(void*)x,(void*)y,(void*)degrees);fclose(_dbg);}}
-// #endregion
 	if (x == NULL || y == NULL || degrees == NULL)
 	{
 		builtin_err = Err_null_ref;

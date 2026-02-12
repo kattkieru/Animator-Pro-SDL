@@ -150,9 +150,6 @@ static Errcode po_over_time(void* effect, void* data)
  * ErrCode OverTime(ErrCode (*effect)(double time, void *data), void *data)
  ****************************************************************************/
 {
-// #region agent log
-{FILE* _dbg=fopen("/Users/kiki/dev/animatorpro/.cursor/debug.log","a");if(_dbg){fprintf(_dbg,"{\"location\":\"pocotime.c:po_over_time\",\"message\":\"OverTime entry\",\"data\":{\"effect\":\"%p\",\"data\":\"%p\"},\"hypothesisId\":\"H3\"}\n",effect,data);fclose(_dbg);}}
-// #endregion
 	Poco1_dat pd;
 	Errcode err;
 	int omulti;

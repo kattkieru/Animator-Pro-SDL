@@ -332,10 +332,6 @@ static Errcode po_gvar_get(char* name, char* value)
 	Globalv* var;
 	Errcode err;
 
-// #region agent log
-{FILE*_df=fopen("/Users/kiki/dev/animatorpro/.cursor/debug.log","a");if(_df){fprintf(_df,"{\"hypothesisId\":\"H20\",\"runId\":\"post-fix\",\"location\":\"pocogvar.c:po_gvar_get\",\"message\":\"entry\",\"data\":{\"name\":\"%p\",\"value\":\"%p\"}}\n",(void*)name,(void*)value);fclose(_df);}}
-// #endregion
-
 	if (NULL == varlist) {
 		err = load_global_vars();
 		if (Success != err) {
@@ -346,10 +342,6 @@ static Errcode po_gvar_get(char* name, char* value)
 	if (NULL == name) {
 		return builtin_err = Err_null_ref;
 	}
-
-// #region agent log
-{FILE*_df=fopen("/Users/kiki/dev/animatorpro/.cursor/debug.log","a");if(_df){fprintf(_df,"{\"hypothesisId\":\"H20\",\"runId\":\"post-fix\",\"location\":\"pocogvar.c:before_find\",\"message\":\"about to call find_global_var\",\"data\":{\"name_str\":\"%.50s\"}}\n",name);fclose(_df);}}
-// #endregion
 
 	var = find_global_var(name);
 	if (NULL == var) {
@@ -373,10 +365,6 @@ static Errcode po_gvar_set(char* name, char* value)
 	Errcode err;
 	Globalv* var;
 	char* newvalue;
-
-// #region agent log
-{FILE*_df=fopen("/Users/kiki/dev/animatorpro/.cursor/debug.log","a");if(_df){fprintf(_df,"{\"hypothesisId\":\"H14\",\"location\":\"pocogvar.c:po_gvar_set\",\"message\":\"entry\",\"data\":{\"name\":\"%p\",\"value\":\"%p\",\"name_str\":\"%.50s\",\"value_str\":\"%.50s\"}}\n",(void*)name,(void*)value,name?name:"NULL",value?value:"NULL");fclose(_df);}}
-// #endregion
 
 	if (NULL == varlist) {
 		err = load_global_vars();

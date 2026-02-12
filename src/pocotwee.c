@@ -265,7 +265,7 @@ static Errcode po_lmalloc_2(Popot *x, Popot *y, int size)
 	*y = poco_lmalloc(size);
 	if ((y->pt) == NULL)
 		{
-		po_free(*x);
+		po_free(x->pt);
 		Popot_make_null(x);
 		return Err_no_memory;
 		}

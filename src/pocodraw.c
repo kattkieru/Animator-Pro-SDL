@@ -537,8 +537,10 @@ static void po_set_cluster(int cluster_size, int* cluster)
 /*****************************************************************************
  * 	void GetCluster(int *cluster_size, int **cluster)
  *		Get the colors in the cluster.
+ * NOTE: pcluster is actually a Popot* in Poco's internal representation,
+ * even though the prototype says int**. We write a full Popot with bounds.
  ****************************************************************************/
-static Errcode po_get_cluster(int* pcluster_size, int** pcluster)
+static Errcode po_get_cluster(int* pcluster_size, Popot* pcluster)
 {
 	struct bundle *b = &vs.buns[vs.use_bun];
 	int cluster_size;
@@ -552,7 +554,7 @@ static Errcode po_get_cluster(int* pcluster_size, int** pcluster)
 	ppt = poco_lmalloc(cluster_size * sizeof(int));
 	if ((cluster = ppt.pt) == NULL)
 		return Err_no_memory;
-	*pcluster = cluster;
+	*pcluster = ppt;  /* Write full Popot with bounds info */
 	for (i=0; i<cluster_size; ++i)
 		*cluster++ = b->bundle[i];
 	return Success;

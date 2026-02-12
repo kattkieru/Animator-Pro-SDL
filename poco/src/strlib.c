@@ -37,17 +37,9 @@ static int po_sprintf(char* buf, char* format, ...)
 	if (buf == NULL || format == NULL)
 		return (builtin_err = Err_null_ref);
 
-// #region agent log
-{FILE*_df=fopen("/Users/kiki/dev/animatorpro/.cursor/debug.log","a");if(_df){fprintf(_df,"{\"hypothesisId\":\"H23\",\"runId\":\"post-fix\",\"location\":\"strlib.c:po_sprintf\",\"message\":\"entry\",\"data\":{\"buf\":\"%p\",\"format\":\"%p\",\"format_str\":\"%.80s\"}}\n",(void*)buf,(void*)format,format?format:"NULL");fclose(_df);}}
-// #endregion
-
 	va_start(args, format);
 	rv = vsprintf(buf, format, args);
 	va_end(args);
-
-// #region agent log
-{FILE*_df=fopen("/Users/kiki/dev/animatorpro/.cursor/debug.log","a");if(_df){fprintf(_df,"{\"hypothesisId\":\"H24\",\"runId\":\"post-fix\",\"location\":\"strlib.c:po_sprintf\",\"message\":\"post-vsprintf\",\"data\":{\"rv\":%d,\"buf_str\":\"%.80s\"}}\n",rv,buf?buf:"NULL");fclose(_df);}}
-// #endregion
 
 	return rv;
 }
@@ -144,7 +136,7 @@ static char* po_strdup(char* s)
 		return NULL;
 	}
 	int len = strlen(s) + 1;
-	d = po_malloc(len);
+	d = poco_lmalloc(len);
 	if (d.pt == NULL) {
 		builtin_err = Err_no_memory;
 		return NULL;

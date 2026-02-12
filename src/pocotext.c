@@ -37,14 +37,14 @@ if (width < widest)
 return width;
 }
 
-static void po_word_wrap(int x, int y, int width, int height, Popot text)
+static void po_word_wrap(int x, int y, int width, int height, void* text)
 /*****************************************************************************
  * void WordWrap(int x, int y, int width, int height, char *text)
  ****************************************************************************/
 {
 Rectangle rect;
 
-if (text.pt == NULL)
+if (text == NULL)
 	{
 	builtin_err = Err_null_ref;
 	return;
@@ -55,14 +55,14 @@ rect.y = y;
 rect.width = width;
 rect.height = height;
 set_gradrect(&rect);
-wwtext(vb.pencel, uvfont, text.pt,
+wwtext(vb.pencel, uvfont, text,
 	x, y, width, height, 0, vs.tit_just, vs.ccolor, TM_RENDER, sblack);
 if (vs.cycle_draw)
 	cycle_redraw_ccolor();
 dirties();
 }
 
-static int po_word_wrap_count_lines(int width, Popot text)
+static int po_word_wrap_count_lines(int width, void* text)
 /*****************************************************************************
  * int WordWrapCountLines(int width, char *text)
  *		count the number of lines text will create when word-wrapping
@@ -71,57 +71,61 @@ static int po_word_wrap_count_lines(int width, Popot text)
 {
 	SHORT maxwid;
 
-	if (text.pt == NULL)
+	if (text == NULL)
 		return builtin_err = Err_null_ref;
 	width = check_font_width(width);
-	return wwcount_lines(uvfont, text.pt, width, &maxwid);
+	return wwcount_lines(uvfont, text, width, &maxwid);
 }
 
-static void po_ink_string(int x, int y, Popot string)
+static void po_ink_string(int x, int y, void* string)
 /*****************************************************************************
  * void Text(int x, int y, char *string)
  ****************************************************************************/
 {
-if (string.pt == NULL)
+if (string == NULL)
 	{
 	builtin_err = Err_null_ref;
 	return;
 	}
-gftext(vb.pencel, uvfont, string.pt, x, y, vs.ccolor, TM_RENDER,
+gftext(vb.pencel, uvfont, string, x, y, vs.ccolor, TM_RENDER,
 	vs.inks[0]);
 if (vs.cycle_draw)
 	cycle_redraw_ccolor();
 dirties();
 }
 
-static void po_get_font_name(Popot name)
+static void po_get_font_name(void* name)
 /*****************************************************************************
  * void GetFontName(char *name)
  ****************************************************************************/
 {
-if (Popot_bufcheck(&name, PATH_SIZE) >= Success)
-	get_uvfont_name(name.pt);
+if (name == NULL)
+	{
+	builtin_err = Err_null_ref;
+	return;
+	}
+get_uvfont_name(name);
 }
 
-static Errcode po_load_font(Popot name)
+static Errcode po_load_font(void* name)
 /*****************************************************************************
  * ErrCode LoadFont(char *name)
  ****************************************************************************/
 {
-	if(name.pt == NULL)
+	if(name == NULL)
 		return(builtin_err = Err_null_ref);
-	return(load_the_font(name.pt));
+	return(load_the_font(name));
 }
 
 
-static int po_string_width(Popot string)
+static int po_string_width(void* string)
 /*****************************************************************************
  * int StringWidth(char *string)
  ****************************************************************************/
 {
-if (string.pt == NULL)
-	return(Err_null_ref);
-return(fstring_width(uvfont, string.pt));
+if (string == NULL)
+	return(builtin_err = Err_null_ref);
+return(fstring_width(uvfont, string));
 }
 
 static int po_font_height(void)
@@ -140,16 +144,18 @@ static int po_tallest_char(void)
 return(tallest_char(uvfont));
 }
 
-static void po_get_font_dir(Popot dir)
+static void po_get_font_dir(void* dir)
 /*****************************************************************************
  * void GetFontDir(char *dir)
  ****************************************************************************/
 {
-if (Popot_bufcheck(&dir, PATH_SIZE) >= Success)
+if (dir == NULL)
 	{
-	vset_get_path(FONT_PATH+vs.font_type,dir.pt);
-	*pj_get_path_name(dir.pt) = 0;
+	builtin_err = Err_null_ref;
+	return;
 	}
+vset_get_path(FONT_PATH+vs.font_type, dir);
+*pj_get_path_name(dir) = 0;
 }
 
 static int po_get_justify(void)
@@ -293,41 +299,33 @@ static int po_title_get_scrolling(void)
  }
 
 
-static Errcode po_title_set_text(Popot ptext)
+static Errcode po_title_set_text(void* text)
 /*****************************************************************************
  *"ErrCode	TitleSetText(char *text);"
  *		Set the titling text to the contents of a string.
  *		If text is NULL then get rid of titling text.
  ****************************************************************************/
  {
-	char *text;
 	int len;
-	int bufsize;
 
-	if ((text = ptext.pt) == NULL)			
+	if (text == NULL)			
 		return pj_delete(text_name);
-	/* Figure out size of text.  Go by strlen mostly.   However it's
-	 * possible the (ab)user forgot to /0 terminate the string.  So
-	 * check length against the size of the buffer they pass in too. */
 	len = strlen(text);							
-	bufsize = Popot_bufsize(&ptext);
-	if (len > bufsize)
-		len = bufsize;
  	return write_gulp(text_name, text, len);
  }
 
-static Errcode po_title_set_text_from_file(Popot name)
+static Errcode po_title_set_text_from_file(void* name)
 /*****************************************************************************
  *"ErrCode	TitleSetTextFromFile(char *file_name);"
  *		Set the titling text to the contents of a file.
  ****************************************************************************/
 {
-	if (name.pt == NULL)
+	if (name == NULL)
 		return(builtin_err = Err_null_ref);
-	return(load_titles(name.pt));
+	return(load_titles(name));
 }
 
-static Popot po_title_get_text(void)
+static void* po_title_get_text(void)
 /*****************************************************************************
  *"char 	*TitleGetText(void);"
  *		Read the current titling text file into a string. 
@@ -342,7 +340,7 @@ static Popot po_title_get_text(void)
 
 	if ((len = pj_file_size(text_name)) < Success)
 		{
-		Popot_make_null(&ret);
+		return NULL;
 		}
 	else
 		{
@@ -352,11 +350,14 @@ static Popot po_title_get_text(void)
 			if (len > 0)
 				{
 				if (read_gulp(text_name, ret.pt, len) < Success)
+					{
 					poco_freez(&ret);
+					return NULL;
+					}
 				}
 			}
 		}
-	return ret;
+	return ret.pt;
  }
 
 
@@ -383,24 +384,21 @@ static void po_title_set_position(int x, int y, int w, int h)
  }
 
 
-static void po_title_get_position(Popot px, Popot py,  Popot pw, Popot ph)
+static void po_title_get_position(int* x, int* y, int* w, int* h)
 /*****************************************************************************
  *"void	TitleGetPosition(int *x, int *y, int *w, int *h);"
  *		Get position of the rectangle in which the titles will be rendered.
  ****************************************************************************/
  {
- 	int *x, *y, *w, *h;
-
-	if	((x = px.pt) == NULL || (y = py.pt) == NULL
-	||	(w = pw.pt) == NULL || (h = ph.pt) == NULL)
-		builtin_err = Err_null_ref;
-	else
+	if (x == NULL || y == NULL || w == NULL || h == NULL)
 		{
-		*x = vs.twin.x;
-		*y = vs.twin.y;
-		*w = vs.twin.width;
-		*h = vs.twin.height;
+		builtin_err = Err_null_ref;
+		return;
 		}
+	*x = vs.twin.x;
+	*y = vs.twin.y;
+	*w = vs.twin.width;
+	*h = vs.twin.height;
  }
 
 

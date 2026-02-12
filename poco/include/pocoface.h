@@ -10,9 +10,9 @@
 #endif
 
 //!TODO: Determine if these sizes are enough for modern use
-#define POCO_STACKSIZE_MIN		(6*1024L)
-#define POCO_STACKSIZE_MAX		(64*1024L)
-#define POCO_STACKSIZE_DEFAULT	(10*1024L) /* default poco runtime stacksize */
+#define POCO_STACKSIZE_MIN		(32*1024L)
+#define POCO_STACKSIZE_MAX		(256*1024L)
+#define POCO_STACKSIZE_DEFAULT	(64*1024L) /* default poco runtime stacksize */
 
 extern int	po_version_number; /* added 10/30/90, poco's version number */
 

@@ -100,6 +100,8 @@ void pj_free(void *p)
 {
 register Memchunk *chunk;
 
+	if (p == NULL)
+		return;
 	chunk = TOSTRUCT(Memchunk,mem,p);
 
 #ifdef COOKIES
@@ -123,7 +125,13 @@ register Memchunk *chunk;
 	safe_rem_node(&chunk->anode);
 #endif /* ALLOCLIST */
 
-	pj_mem_used -= SYS_FREE(chunk);	
+#ifdef CLIB_MEMORY
+	/* c_freemem() expects the payload pointer (as returned by c_askmem),
+	 * not the chunk pointer. Memchunk layout may not match Lochunk. */
+	pj_mem_used -= SYS_FREE(p);
+#else
+	pj_mem_used -= SYS_FREE(chunk);
+#endif
 	return;
 }
 

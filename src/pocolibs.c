@@ -55,7 +55,7 @@ Poco_lib* get_poco_libs()
  ****************************************************************************/
 
 extern Popot poco_lmalloc(long size);
-extern void po_free(Popot ppt);
+extern void po_free(void* pt);
 
 /*****************************************************************************
  * Convert a polygon to two int arrays
@@ -89,7 +89,7 @@ Errcode po_poly_to_arrays(Poly* p, Popot* px, Popot* py)
 	}
 	y = poco_lmalloc(acount);
 	if (y.pt == NULL) {
-		po_free(x);
+		po_free(x.pt);
 		return Err_no_memory;
 	}
 	poly_to_arrays(p, x.pt, y.pt);

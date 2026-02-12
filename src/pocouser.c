@@ -171,9 +171,6 @@ static void set_input_values(int* x, int* y, int* left, int* right, int* key)
 	} else {
 		*key = 0;
 	}
-// #region agent log
-{FILE* _dbg=fopen("/Users/kiki/dev/animatorpro/.cursor/debug.log","a");if(_dbg){fprintf(_dbg,"{\"location\":\"pocouser.c:set_input_values\",\"message\":\"input values set\",\"data\":{\"mx\":%d,\"my\":%d,\"left\":%d,\"right\":%d,\"key\":%d},\"hypothesisId\":\"H1\"}\n",*x,*y,*left,*right,*key);fclose(_dbg);}}
-// #endregion
 }
 
 /*****************************************************************************
@@ -192,9 +189,6 @@ static void po_wndo_input(int* x, int* y, int* left, int* right, int* key, ULONG
  ****************************************************************************/
 static void po_wait_click(int* x, int* y, int* left, int* right, int* key)
 {
-// #region agent log
-{FILE* _dbg=fopen("/Users/kiki/dev/animatorpro/.cursor/debug.log","a");if(_dbg){fprintf(_dbg,"{\"location\":\"pocouser.c:po_wait_click\",\"message\":\"WaitClick entry\",\"data\":{\"x\":\"%p\",\"y\":\"%p\",\"left\":\"%p\",\"right\":\"%p\",\"key\":\"%p\"},\"hypothesisId\":\"H1\"}\n",(void*)x,(void*)y,(void*)left,(void*)right,(void*)key);fclose(_dbg);}}
-// #endregion
 	po_wndo_input(x, y, left, right, key, ANY_CLICK);
 }
 
@@ -316,9 +310,6 @@ static bool po_rub_box(int* x, int* y, int* w, int* h)
  ****************************************************************************/
 static bool po_rub_line(int x1, int y1, int* x2, int* y2)
 {
-// #region agent log
-{FILE* _dbg=fopen("/Users/kiki/dev/animatorpro/.cursor/debug.log","a");if(_dbg){fprintf(_dbg,"{\"location\":\"pocouser.c:po_rub_line\",\"message\":\"RubLine entry\",\"data\":{\"x1\":%d,\"y1\":%d,\"x2\":\"%p\",\"y2\":\"%p\"},\"hypothesisId\":\"H1\"}\n",x1,y1,(void*)x2,(void*)y2);fclose(_dbg);}}
-// #endregion
 	Short_xy xys[2];
 	int ret;
 
@@ -502,9 +493,6 @@ static void po_TextBox(char* fmt, ...)
 	va_list args;
 	bool mouse_was_on;
 
-// #region agent log
-{FILE*_df=fopen("/Users/kiki/dev/animatorpro/.cursor/debug.log","a");if(_df){fprintf(_df,"{\"hypothesisId\":\"H15\",\"location\":\"pocouser.c:po_TextBox\",\"message\":\"Qtext entry\",\"data\":{\"fmt\":\"%p\",\"fmt_str\":\"%.80s\"}}\n",(void*)fmt,fmt?fmt:"NULL");fclose(_df);}}
-// #endregion
 	va_start(args, fmt);
 	if (fmt == NULL) {
 		fmt = "";
@@ -544,9 +532,6 @@ static bool po_YesNo(char* question, ...)
  ****************************************************************************/
 static bool po_Slider(int* inum, int min, int max, char* hailing)
 {
-// #region agent log
-{FILE* _dbg=fopen("/Users/kiki/dev/animatorpro/.cursor/debug.log","a");if(_dbg){fprintf(_dbg,"{\"location\":\"pocouser.c:po_Slider\",\"message\":\"Qnumber entry\",\"data\":{\"inum\":\"%p\",\"min\":%d,\"max\":%d,\"hailing\":\"%s\"},\"hypothesisId\":\"H2\"}\n",(void*)inum,min,max,hailing?hailing:"(null)");fclose(_dbg);}}
-// #endregion
 	short num;
 	bool cancel;
 	bool mouse_was_on;

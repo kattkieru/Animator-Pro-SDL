@@ -20,6 +20,7 @@
 #include "resource.h"
 #include "vdevcall.h"
 #include "zoom.h"
+#include "memory.h"
 
 #ifdef WITH_POCO
 #include "poco/poco.h"
@@ -414,9 +415,20 @@ void cleanup(bool save_state)
 	cleanup_all(Success);
 }
 
+#ifdef CLIB_MEMORY
+static void log_pj_memory_stats(void)
+{
+	fprintf(stderr, "pj memory: max_used=%ld leaked=%ld\n",
+		(long)pj_max_mem_used, (long)pj_mem_used);
+}
+#endif
+
 static void outofhere(bool save_state)
 {
 	cleanup(save_state);
+#ifdef CLIB_MEMORY
+	log_pj_memory_stats();
+#endif
 	exit(0);
 }
 
@@ -530,6 +542,9 @@ int main(int argc, char** argv)
 	}
 error:
 	cleanup_all(err);
+#ifdef CLIB_MEMORY
+	log_pj_memory_stats();
+#endif
 	exit(err);
 }
 

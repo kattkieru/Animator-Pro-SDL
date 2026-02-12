@@ -270,9 +270,14 @@ Errcode poco_cont_ops(void* code_pt, Pt_num* pret, int arglength, ...)
 #endif /* STRING_EXPERIMENT */
 			case OP_CPT_TO_PPT:
 				// convert void* to popot pointer
+				// NOTE: Since we don't know the size of the C-allocated memory,
+				// we set permissive bounds (min=0, max=max_addr) to allow array
+				// access. This trades safety for C interoperability.
 				acc.ret.p	   = stack->p;
 				stack		   = OPTR(stack, sizeof(stack->p) - sizeof(stack->ppt));
-				stack->ppt.min = stack->ppt.max = stack->ppt.pt = acc.ret.p;
+				stack->ppt.pt  = acc.ret.p;
+				stack->ppt.min = NULL;
+				stack->ppt.max = (void*)~(size_t)0;
 				break;
 #ifdef STRING_EXPERIMENT
 			case OP_CPT_TO_STRING:
@@ -319,6 +324,7 @@ Errcode poco_cont_ops(void* code_pt, Pt_num* pret, int arglength, ...)
 			case OP_LCCALL:	 /* call long valued C function */
 			case OP_DCCALL:	 /* call double valued C function */
 			case OP_PCCALL:	 /* call (popot) pointer valued C function */
+			case OP_CPCCALL: /* call C pointer valued C function */
 			case OP_CVCCALL: /* call void valued C function */
 				if (STACK_OVERFLOW(MIN_CCALL_STACK)) {
 					err = Err_stack;
@@ -326,16 +332,10 @@ Errcode poco_cont_ops(void* code_pt, Pt_num* pret, int arglength, ...)
 				}
 				binding = po_ffi_find_binding(pe, ip->func);
 				if (builtin_err < Success) {
-// #region agent log
-{FILE*_df=fopen("/Users/kiki/dev/animatorpro/.cursor/debug.log","a");if(_df){fprintf(_df,"{\"hypothesisId\":\"H12\",\"location\":\"runops.c:CCALL_pre_check\",\"message\":\"stale builtin_err before call\",\"data\":{\"builtin_err\":%d,\"next_func\":\"%s\"}}\n",(int)builtin_err,binding?binding->name:"NULL");fclose(_df);}}
-// #endregion
 					goto ERR_IN_LIBROUTINE;
 				}
 
 					acc.ret = po_ffi_call(binding, stack, pe->variadic_types);
-// #region agent log
-if(builtin_err<Success){FILE*_df=fopen("/Users/kiki/dev/animatorpro/.cursor/debug.log","a");if(_df){fprintf(_df,"{\"hypothesisId\":\"H12\",\"location\":\"runops.c:CCALL_post\",\"message\":\"builtin_err set by call\",\"data\":{\"builtin_err\":%d,\"func_name\":\"%s\"}}\n",(int)builtin_err,binding?binding->name:"NULL");fclose(_df);}}
-// #endregion
 				if (builtin_err < Success) {
 					goto ERR_IN_LIBROUTINE;
 				}
@@ -1612,9 +1612,6 @@ ERR_SMALL:
 	goto DEBUG;
 
 ERR_BIG:
-// #region agent log
-{FILE*_df=fopen("/Users/kiki/dev/animatorpro/.cursor/debug.log","a");if(_df){fprintf(_df,"{\"hypothesisId\":\"H13\",\"location\":\"runops.c:ERR_BIG\",\"message\":\"bounds check failed\",\"data\":{\"pt\":\"%p\",\"min\":\"%p\",\"max\":\"%p\"}}\n",acc.ret.ppt.pt,acc.ret.ppt.min,acc.ret.ppt.max);fclose(_df);}}
-// #endregion
 	err = Err_index_big;
 	goto DEBUG;
 
@@ -1625,9 +1622,6 @@ ERR_INLINE_FPMATH:			   // the host has indicated an 80x87 math err happened
 	goto DEBUG;				   // as occurring in the poco code, not a lib routine.
 
 ERR_IN_LIBROUTINE:
-// #region agent log
-{FILE*_df=fopen("/Users/kiki/dev/animatorpro/.cursor/debug.log","a");if(_df){fprintf(_df,"{\"hypothesisId\":\"H12\",\"location\":\"runops.c:ERR_IN_LIBROUTINE\",\"message\":\"lib error caught\",\"data\":{\"builtin_err\":%d}}\n",(int)builtin_err);fclose(_df);}}
-// #endregion
 	err = builtin_err;
 	if (err == Err_poco_exit)		 // the ONLY thing that can set this
 	{								 // is poco's builtin exit() function,

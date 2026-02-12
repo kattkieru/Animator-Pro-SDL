@@ -57,7 +57,7 @@ void poco_freez(Popot *pt)
  ****************************************************************************/
 {
 if (pt->pt != NULL)
-	po_free(*pt);
+	po_free(pt->pt);
 pt->pt = pt->min =	pt->max = NULL;
 }
 

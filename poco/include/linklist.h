@@ -36,6 +36,13 @@ static inline void rem_node(Dlnode *n)
     n->next = n->prev = 0;
 }
 
+static inline void rem_from_list(Dlheader *h, Dlnode *n)
+{
+    if (n->prev) n->prev->next = n->next; else h->head = n->next;
+    if (n->next) n->next->prev = n->prev; else h->tail = n->prev;
+    n->next = n->prev = 0;
+}
+
 #endif /* LINKLIST_H */
 
 

@@ -9,7 +9,7 @@
 
 extern Errcode builtin_err;
 Popot poco_lmalloc(long size);
-void po_free(Popot ppt);
+void po_free(void* pt);
 Errcode po_poly_to_arrays(Poly* p, Popot* x, Popot* y);
 int twirl1(Celcfit* cfit, int ix, int frames, int scale);
 int a3d_get_auto_flags();
